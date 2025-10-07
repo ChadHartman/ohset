@@ -1,9 +1,9 @@
-project('set', 
+project('ohset', 
     'c', 
     default_options: ['c_std=c99'],
     version: '1.0.0')
 
-# meson setup -Db_coverage=true builddir
+# meson ohsetup -Db_coverage=true builddir
 
 c_args = []
 
@@ -13,21 +13,21 @@ else
     c_args = ['-Wall', '-Wextra', '-Werror']
 endif
 
-libset = library(
-    'set', 
-    files('./src/set.c'),
+libohset = library(
+    'ohset', 
+    files('./src/ohset.c'),
     include_directories: include_directories('./include/'),
     version: meson.project_version(),
     soversion: '1',
     c_args: c_args)
 
-set_dep = declare_dependency(
+ohset_dep = declare_dependency(
   include_directories: include_directories('./include/'),
-  link_with: libset)
+  link_with: libohset)
 
-tests = executable('set-tests',
+tests = executable('ohset-tests',
     sources: [
-        'src/set.c',
+        'src/ohset.c',
         'test/main.c'
     ],
     include_directories: include_directories(['include', 'src', 'test']),
@@ -35,4 +35,4 @@ tests = executable('set-tests',
 
 # `ninja coverage` to generate coverage reports
 
-test('set-tests', tests)
+test('ohset-tests', tests)

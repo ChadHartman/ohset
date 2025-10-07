@@ -1,0 +1,51 @@
+#ifndef OHSET_H
+#define OHSET_H
+
+#include <stdbool.h>
+#include <stddef.h> // size_t
+#include <stdint.h> // uint8_t
+
+/// @brief A collection of distinct elements implemented by an open-addressing hash set
+typedef struct ohset_t ohset_t;
+
+/// @brief A Set iterator
+typedef struct ohset_iter_t ohset_iter_t;
+
+typedef struct ohset_config_t {
+
+  void *(*alloc)(void *, void *, size_t);
+  void *alloc_ctx;
+
+  size_t item_size;
+
+  int (*cmp)(const void *, const void *);
+
+  size_t (*hash)(const void *);
+
+  void (*destructor)(void *, void *, void *(*alloc)(void *, void *, size_t));
+
+} ohset_config_t;
+
+ohset_t *ohset_create(const ohset_config_t *restrict config);
+
+const void *ohset_get(ohset_t *ohset, const void *value);
+
+bool ohset_add(ohset_t *s, const void *value);
+
+bool ohset_put(ohset_t *s, const void *value);
+
+bool ohset_remove(ohset_t *s, const void *value);
+
+void ohset_clear(ohset_t *s);
+
+void ohset_free(ohset_t *s);
+
+ohset_iter_t *ohset_iter(ohset_t *s);
+
+ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter);
+
+const void *ohset_iter_value(ohset_iter_t *restrict iter);
+
+uint32_t ohset_hash(const uint8_t *restrict key, size_t len);
+
+#endif

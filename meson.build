@@ -29,10 +29,13 @@ tests = executable('ohset-tests',
     sources: [
         'src/ohset.c',
         'test/main.c',
-        'test/suite/hashtests.c'
+        'test/suite/hashtests.c',
+        'test/suite/newtests.c'
     ],
     include_directories: include_directories(['include', 'src', 'test']),
-    c_args: c_args)
+    c_args: c_args 
+        + '-DOHSET_NO_ABORT'
+        + '-DOHSET_DEBUG')
 
 # `ninja coverage` to generate coverage reports
 

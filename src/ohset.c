@@ -1,4 +1,6 @@
 #include <ohset.h>
+#include <stdio.h>  // printf
+#include <stdlib.h> // malloc, realloc, free
 #include <string.h> // memcpy
 
 #ifdef OHSET_DEBUG
@@ -72,7 +74,19 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
   *set = (ohset_t){
       .config = *config,
   };
+
+  set->config.alloc = alloc;
+
   return set;
+}
+
+void ohset_free(ohset_t *restrict set) {
+
+  if (set == NULL) {
+    return;
+  }
+
+  set->config.alloc(set->config.alloc_ctx, set, 0);
 }
 
 uint32_t ohset_hash(const uint8_t *restrict key, size_t len) {

@@ -11,9 +11,11 @@ typedef struct test_t {
 } test_t;
 
 TEST(hash);
+TEST(new);
 
 const test_t tests[] = {
     TEST_REG(hash),
+    TEST_REG(new),
 };
 
 #endif

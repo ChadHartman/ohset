@@ -41,7 +41,7 @@ bool ohset_remove(ohset_t *s, const void *value);
 
 void ohset_clear(ohset_t *s);
 
-void ohset_free(ohset_t *s);
+void ohset_free(ohset_t *restrict set);
 
 ohset_iter_t *ohset_iter(ohset_t *s);
 

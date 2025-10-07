@@ -14,19 +14,22 @@ typedef struct ohset_iter_t ohset_iter_t;
 typedef struct ohset_config_t {
 
   void *(*alloc)(void *, void *, size_t);
-  void *alloc_ctx;
 
-  size_t item_size;
+  void *alloc_ctx;
 
   int (*cmp)(const void *, const void *);
 
+  void (*item_dtor)(void *, void *, void *(*alloc)(void *, void *, size_t));
+
   size_t (*hash)(const void *);
 
-  void (*destructor)(void *, void *, void *(*alloc)(void *, void *, size_t));
+  size_t item_size;
+
+  float load_factor;
 
 } ohset_config_t;
 
-ohset_t *ohset_create(const ohset_config_t *restrict config);
+ohset_t *ohset_new(const ohset_config_t *restrict config);
 
 const void *ohset_get(ohset_t *ohset, const void *value);
 

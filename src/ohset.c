@@ -1,11 +1,78 @@
 #include <ohset.h>
 #include <string.h> // memcpy
 
+#ifdef OHSET_DEBUG
+#define OHSET_LOG(...)                                        \
+  printf("%s:%d - ", (strrchr(__FILE__, '/') + 1), __LINE__); \
+  printf(__VA_ARGS__);                                        \
+  printf("\n")
+#else // OHSET_DEBUG
+#define OHSET_LOG(...) (void)0
+#endif // OHSET_DEBUG
+
+#ifdef OHSET_NO_ABORT
+#define OHSET_ABORT(...) OHSET_LOG(__VA_ARGS__)
+#else // OHSET_NO_ABORT
+#define OHSET_ABORT(...)  \
+  OHSET_LOG(__VA_ARGS__); \
+  abort()
+#endif // OHSET_NO_ABORT
+
+struct ohset_t {
+
+  ohset_config_t config;
+
+  uint8_t *buckets;
+  size_t bucket_count;
+};
+
 static inline uint32_t ohset_hash_scramble(uint32_t k) {
   k *= 0xcc9e2d51;
   k = (k << 15) | (k >> 17);
   k *= 0x1b873593;
   return k;
+}
+
+static void *ohset_default_alloc(void *ctx, void *ptr, size_t size) {
+
+  (void)ctx;
+
+  if (size == 0) {
+    free(ptr);
+    return NULL;
+  }
+
+  if (ptr == NULL) {
+    return malloc(size);
+  }
+
+  return realloc(ptr, size);
+}
+
+ohset_t *ohset_new(const ohset_config_t *restrict config) {
+
+  if (config == NULL) {
+    OHSET_ABORT("NULL config provided");
+    return NULL;
+  }
+
+  if (config->item_size == 0) {
+    OHSET_ABORT("%zu is not a valid item size", config->item_size);
+    return NULL;
+  }
+
+  void *(*alloc)(void *, void *, size_t) = config->alloc ? config->alloc : ohset_default_alloc;
+
+  ohset_t *restrict set = alloc(config->alloc_ctx, NULL, sizeof(ohset_t));
+  if (set == NULL) {
+    OHSET_ABORT("Failed to allocate %zu bytes; allocator returned NULL", sizeof(ohset_t));
+    return NULL;
+  }
+
+  *set = (ohset_t){
+      .config = *config,
+  };
+  return set;
 }
 
 uint32_t ohset_hash(const uint8_t *restrict key, size_t len) {

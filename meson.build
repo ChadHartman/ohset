@@ -28,7 +28,8 @@ ohset_dep = declare_dependency(
 tests = executable('ohset-tests',
     sources: [
         'src/ohset.c',
-        'test/main.c'
+        'test/main.c',
+        'test/suite/hashtests.c'
     ],
     include_directories: include_directories(['include', 'src', 'test']),
     c_args: c_args)

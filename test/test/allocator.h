@@ -19,4 +19,6 @@ typedef struct allocator_t {
 
 void *alloc(void *ctx, void *ptr, size_t size);
 
+char *alloc_strdup(allocator_t *restrict allocator, const char *restrict src);
+
 #endif

@@ -35,8 +35,8 @@ static void test_add_many() {
 static void test_add_str() {
 
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
-      .cmp = (int (*)(const void *, const void *))strcmp,
-      .hash = hash_str,
+      .item_cmp = (int (*)(const void *, const void *))strcmp,
+      .item_hash = hash_str,
       .item_size = sizeof(size_t),
   });
   ASSERT_NON_NULL(set);

@@ -103,9 +103,9 @@ static ohset_bucket_t ohset_bucket(
     return (ohset_bucket_t){0};
   }
 
-  const uint32_t digest = set->config.hash == NULL
+  const uint32_t digest = set->config.item_hash == NULL
                               ? ohset_hash(value, set->config.item_size)
-                              : set->config.hash(value);
+                              : set->config.item_hash(value);
   uint32_t idx = digest % set->bucket_count;
 
   for (uint32_t i = 0; i < set->bucket_count; ++i) {
@@ -122,9 +122,9 @@ static ohset_bucket_t ohset_bucket(
       };
 
     case OHSET_BUCKET_POPULATED: {
-      const int res = set->config.cmp == NULL
+      const int res = set->config.item_cmp == NULL
                           ? memcmp(value, item, set->config.item_size)
-                          : set->config.cmp(value, item);
+                          : set->config.item_cmp(value, item);
       if (res == 0) {
         return (ohset_bucket_t){
             .item = item,

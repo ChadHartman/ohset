@@ -4,8 +4,8 @@
 #include <inttypes.h> // PRId64
 #include <stdbool.h>
 #include <stdio.h>  // printf
-#include <string.h> // strrchr
 #include <stdlib.h> // EXIT_FAILURE
+#include <string.h> // strrchr
 
 #define COLOR_RED "\x1b[31m"
 #define COLOR_GREEN "\x1b[32m"
@@ -14,6 +14,8 @@
 #define COLOR_MAGENTA "\x1b[35m"
 #define COLOR_CYAN "\x1b[36m"
 #define COLOR_RESET "\x1b[0m"
+
+uint32_t hash_str(const void *ptr);
 
 #define TEST(name) void test_##name()
 

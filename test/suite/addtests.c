@@ -2,11 +2,6 @@
 #include <test/allocator.h>
 #include <test/test.h>
 
-static uint32_t hash_str(const void *ptr) {
-  const char *str = ptr;
-  return ohset_hash(str, strlen(str));
-}
-
 static void test_add_many() {
 
   ASSERT_FALSE(ohset_add(NULL, NULL));

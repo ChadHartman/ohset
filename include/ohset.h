@@ -35,7 +35,7 @@ const void *ohset_get(const ohset_t *restrict set, const void *restrict value);
 
 bool ohset_add(ohset_t *restrict set, const void *restrict value);
 
-bool ohset_remove(ohset_t *s, const void *value);
+bool ohset_remove(ohset_t *restrict set, const void *restrict value);
 
 void ohset_clear(ohset_t *s);
 

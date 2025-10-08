@@ -33,6 +33,7 @@ tests = executable('ohset-tests',
         'test/suite/gettests.c',
         'test/suite/hashtests.c',
         'test/suite/newtests.c',
+        'test/suite/removetests.c',
         'test/test/allocator.c'
     ],
     include_directories: include_directories(['include', 'src', 'test']),

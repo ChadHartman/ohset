@@ -21,9 +21,9 @@
   abort()
 #endif // OHSET_NO_ABORT
 
-#define OHSET_BUCKET_NULL 0
-#define OHSET_BUCKET_POPULATED 1
-#define OHSET_BUCKET_TOMBSTONED 2
+static const uint8_t OHSET_BUCKET_NULL = 0;
+static const uint8_t OHSET_BUCKET_POPULATED = 1;
+static const uint8_t OHSET_BUCKET_TOMBSTONED = 2;
 
 struct ohset_t {
 
@@ -57,11 +57,8 @@ static void *ohset_default_alloc(void *ctx, void *ptr, size_t size) {
     return NULL;
   }
 
-  if (ptr == NULL) {
-    return malloc(size);
-  }
-
-  return realloc(ptr, size);
+  // We never realloc
+  return malloc(size);
 }
 
 /// @brief Attempts to expand the number of managed buckets
@@ -247,6 +244,39 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
   memcpy((uint8_t *)bucket.item, value, set->config.item_size);
   *((uint8_t *)bucket.state) = (uint8_t)OHSET_BUCKET_POPULATED;
   ++set->item_count;
+  return true;
+}
+
+bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
+
+  if (set == NULL) {
+    OHSET_ABORT("ohset_remove(NULL, ...) was called");
+    return false;
+  }
+
+  if (value == NULL) {
+    OHSET_ABORT("ohset_remove(ohset_t@%p, NULL) was called", set);
+    return false;
+  }
+
+  ohset_bucket_t bucket = ohset_bucket(set, value, false);
+
+  if (bucket.state == NULL || *bucket.state == OHSET_BUCKET_NULL || *bucket.state == OHSET_BUCKET_TOMBSTONED) {
+    // nothing to remove
+    return false;
+  }
+
+  // TODO s->iterator.mode = ITERATOR_INVALIDATED;
+
+  if (set->config.item_dtor) {
+    set->config.item_dtor(
+        set->config.alloc_ctx,
+        set->config.alloc,
+        bucket.item);
+  }
+
+  *(uint8_t *)bucket.state = OHSET_BUCKET_TOMBSTONED;
+  --set->item_count;
   return true;
 }
 

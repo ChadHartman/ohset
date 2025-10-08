@@ -14,12 +14,14 @@ TEST(add);
 TEST(get);
 TEST(hash);
 TEST(new);
+TEST(remove);
 
 const test_t tests[] = {
     TEST_REG(add),
     TEST_REG(get),
     TEST_REG(hash),
     TEST_REG(new),
+    TEST_REG(remove),
 };
 
 #endif

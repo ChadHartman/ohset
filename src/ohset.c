@@ -272,7 +272,7 @@ bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
     set->config.item_dtor(
         set->config.alloc_ctx,
         set->config.alloc,
-        bucket.item);
+        (void *)bucket.item);
   }
 
   *(uint8_t *)bucket.state = OHSET_BUCKET_TOMBSTONED;

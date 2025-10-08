@@ -19,7 +19,7 @@ typedef struct ohset_config_t {
 
   int (*cmp)(const void *, const void *);
 
-  void (*item_dtor)(void *, void *, void *(*alloc)(void *, void *, size_t));
+  void (*item_dtor)(void *, void *(*alloc)(void *, void *, size_t), void *);
 
   uint32_t (*hash)(const void *);
 

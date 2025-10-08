@@ -3,25 +3,39 @@
 
 TEST(remove) {
 
-    ASSERT_FALSE(ohset_remove(NULL, NULL));
+  ASSERT_FALSE(ohset_remove(NULL, NULL));
 
-  
+  const size_t item = 42;
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .item_size = sizeof(size_t),
+      .load_factor = 1.0f,
   });
   ASSERT_NON_NULL(set);
+  ASSERT_FALSE(ohset_remove(set, NULL));
+  ASSERT_FALSE(ohset_remove(set, &item));
 
-  
+  // Populate
   for (size_t i = 42; i < 52; ++i) {
-    ASSERT_FALSE(ohset_get(set, &i));
     ASSERT(ohset_add(set, &i));
-    ASSERT_FALSE(ohset_add(set, &i));
-    ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
   }
 
-  // Ensure all items are present
+  // Remove
   for (size_t i = 42; i < 52; ++i) {
-    ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
+    ASSERT(ohset_remove(set, &i));
+    ASSERT_NULL(ohset_get(set, &i));
+    ASSERT_FALSE(ohset_remove(set, &i));
+  }
+
+  // Repopulate
+  for (size_t i = 42; i < 52; ++i) {
+    ASSERT(ohset_add(set, &i));
+  }
+
+  // Re-remove
+  for (size_t i = 42; i < 52; ++i) {
+    ASSERT(ohset_remove(set, &i));
+    ASSERT_NULL(ohset_get(set, &i));
+    ASSERT_FALSE(ohset_remove(set, &i));
   }
 
   ohset_free(set);

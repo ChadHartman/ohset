@@ -30,7 +30,7 @@ char *alloc_strdup(allocator_t *restrict allocator, const char *restrict src) {
     return NULL;
   }
 
-  char *res = malloc(strlen(src) + 1);
+  char *res = alloc(allocator, NULL, strlen(src) + 1);
   if (res == NULL) {
     return NULL;
   }

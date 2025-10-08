@@ -25,9 +25,12 @@ ohset_dep = declare_dependency(
   include_directories: include_directories('./include/'),
   link_with: libohset)
 
-
 ex_dictionary = executable('example-dictionary', 
     sources: files('./example/main-dictionary.c'),
+    dependencies: [ohset_dep])
+
+ex_int = executable('example-int', 
+    sources: files('./example/main-int.c'),
     dependencies: [ohset_dep])
 
 tests = executable('ohset-tests',
@@ -51,3 +54,5 @@ tests = executable('ohset-tests',
 # `ninja coverage` to generate coverage reports
 
 test('ohset-tests', tests)
+test('example-dictionary', ex_dictionary)
+test('example-int', ex_int)

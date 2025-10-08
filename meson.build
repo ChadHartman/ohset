@@ -30,6 +30,7 @@ tests = executable('ohset-tests',
         'src/ohset.c',
         'test/main.c',
         'test/suite/addtests.c',
+        'test/suite/gettests.c',
         'test/suite/hashtests.c',
         'test/suite/newtests.c',
         'test/test/allocator.c'

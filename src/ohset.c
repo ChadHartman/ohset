@@ -23,8 +23,6 @@
 #define OHSET_BUCKET_NULL 0
 #define OHSET_BUCKET_POPULATED 1
 #define OHSET_BUCKET_TOMBSTONED 2
-#define OHSET_BUCKET_NONE 3
-#define OHSET_BUCKET_ERROR 4
 
 struct ohset_t {
 
@@ -38,9 +36,8 @@ struct ohset_t {
 };
 
 typedef struct ohset_bucket_t {
-  uint8_t state;
+  const uint8_t *state;
   const uint8_t *item;
-  const uint8_t *bucket;
 } ohset_bucket_t;
 
 static inline uint32_t ohset_hash_scramble(uint32_t k) {
@@ -66,6 +63,28 @@ static void *ohset_default_alloc(void *ctx, void *ptr, size_t size) {
   return realloc(ptr, size);
 }
 
+static void ohset_rehash(ohset_t *restrict set) {
+
+  const uint32_t old_bucket_count = set->bucket_count;
+  const uint8_t *old_buckets = set->buckets;
+
+  set->bucket_count = old_bucket_count == 0 ? 8 : set->bucket_count * 2;
+  size_t new_size = set->bucket_count * set->bucket_size;
+  set->buckets = set->config.alloc(set->config.alloc_ctx, NULL, new_size);
+  set->item_count = 0;
+  memset(set->buckets, 0, new_size);
+
+  for (uint32_t i = 0; i < old_bucket_count; ++i) {
+    const uint8_t *bucket = old_buckets + (i * set->bucket_size);
+    uint8_t state = *((const uint8_t *)(bucket + set->config.item_size));
+    if (state == OHSET_BUCKET_POPULATED) {
+      ohset_add(set, bucket);
+    }
+  }
+
+  set->config.alloc(set->config.alloc_ctx, (void *)old_buckets, 0);
+}
+
 static ohset_bucket_t ohset_bucket(
     const ohset_t *restrict set,
     const void *restrict value,
@@ -82,17 +101,15 @@ static ohset_bucket_t ohset_bucket(
 
   for (uint32_t i = 0; i < set->bucket_count; ++i) {
 
-    const uint8_t *bucket = set->buckets + (idx * set->bucket_size);
-    const uint8_t bucket_state = *bucket;
-    const uint8_t *item = bucket + sizeof(uint8_t);
+    const uint8_t *item = set->buckets + (idx * set->bucket_size);
+    const uint8_t *state = item + set->config.item_size;
 
-    switch (bucket_state) {
+    switch (*state) {
     case OHSET_BUCKET_NULL:
       // Acceptable for either state
       return (ohset_bucket_t){
           .item = item,
-          .state = bucket_state,
-          .bucket = bucket,
+          .state = state,
       };
 
     case OHSET_BUCKET_POPULATED: {
@@ -102,8 +119,7 @@ static ohset_bucket_t ohset_bucket(
       if (res == 0) {
         return (ohset_bucket_t){
             .item = item,
-            .state = bucket_state,
-            .bucket = bucket,
+            .state = state,
         };
       }
     } break;
@@ -112,8 +128,7 @@ static ohset_bucket_t ohset_bucket(
       if (writable) {
         return (ohset_bucket_t){
             .item = item,
-            .state = bucket_state,
-            .bucket = bucket,
+            .state = state,
         };
       }
       // Need to keep looking, could be another value
@@ -121,7 +136,7 @@ static ohset_bucket_t ohset_bucket(
 
     default:
       OHSET_ABORT("Unreachable section reached");
-      return (ohset_bucket_t){.state = OHSET_BUCKET_ERROR};
+      return (ohset_bucket_t){0};
     }
 
     // Linear search
@@ -177,7 +192,7 @@ const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
 
   ohset_bucket_t bucket = ohset_bucket(set, value, false);
 
-  return bucket.state == OHSET_BUCKET_POPULATED
+  return bucket.state != NULL && *bucket.state == OHSET_BUCKET_POPULATED
              ? bucket.item
              : NULL;
 }
@@ -195,7 +210,7 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
   }
 
   ohset_bucket_t bucket = ohset_bucket(set, value, true);
-  if (OHSET_BUCKET_ERROR == bucket.state || OHSET_BUCKET_POPULATED == bucket.state) {
+  if (bucket.state == NULL || OHSET_BUCKET_POPULATED == *bucket.state) {
     return false;
   }
 
@@ -205,16 +220,16 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
                                 // +1 for the new item
                                 : ((float)(set->item_count + 1) / (float)(set->bucket_count));
 
-  if (load_factor > 0.5f) {
+  if (load_factor > set->config.load_factor) {
     ohset_rehash(set);
     bucket = ohset_bucket(set, value, true);
-    if (OHSET_BUCKET_ERROR == bucket.state) {
+    if (bucket.state == NULL) {
       return false;
     }
   }
 
   memcpy((uint8_t *)bucket.item, value, set->config.item_size);
-  *((uint8_t *)bucket.bucket) = (uint8_t)OHSET_BUCKET_POPULATED;
+  *((uint8_t *)bucket.state) = (uint8_t)OHSET_BUCKET_POPULATED;
   ++set->item_count;
   return true;
 }

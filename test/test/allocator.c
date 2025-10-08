@@ -1,6 +1,8 @@
 #include <stdlib.h> // malloc, realloc, free
 #include <string.h> // strlen
 
+#include <test/test.h>
+
 #include "allocator.h"
 
 void *allocator_alloc(void *ctx, void *ptr, size_t size) {
@@ -36,5 +38,6 @@ char *allocator_strdup(allocator_t *restrict allocator, const char *restrict src
   }
 
   strcpy(res, src);
+
   return res;
 }

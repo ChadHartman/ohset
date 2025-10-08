@@ -78,8 +78,32 @@ static void test_add_alloc_failed_2nd_time() {
   ohset_free(set);
 }
 
+static void test_add_load_factor_1() {
+
+  ohset_t *restrict set = ohset_new(&(ohset_config_t){
+      .item_size = sizeof(size_t),
+      .load_factor = 2.0f, // Will get maxed to 1.0
+  });
+
+  ASSERT_NON_NULL(set);
+
+  for (size_t i = 42; i < 52; ++i) {
+    ASSERT_FALSE(ohset_get(set, &i));
+    ASSERT(ohset_add(set, &i));
+    ASSERT_FALSE(ohset_add(set, &i));
+    ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
+  }
+
+  // Ensure all items are present
+  for (size_t i = 42; i < 52; ++i) {
+    ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
+  }
+
+  ohset_free(set);
+}
+
 TEST(add) {
-  // TODO: load_factor of 1
+  test_add_load_factor_1();
   test_add_many();
   test_add_str();
   test_add_alloc_failed_2nd_time();

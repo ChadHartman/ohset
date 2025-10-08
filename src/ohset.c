@@ -185,7 +185,12 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
   };
 
   set->config.alloc = alloc;
-  set->config.load_factor = config->load_factor == 0.0f ? 0.5f : config->load_factor;
+
+  if (config->load_factor == 0.0f) {
+    set->config.load_factor = 0.5f;
+  } else if (config->load_factor > 1.0f) {
+    set->config.load_factor = 1.0f;
+  }
 
   return set;
 }

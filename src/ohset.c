@@ -63,14 +63,24 @@ static void *ohset_default_alloc(void *ctx, void *ptr, size_t size) {
   return realloc(ptr, size);
 }
 
-static void ohset_rehash(ohset_t *restrict set) {
+/// @brief Attempts to expand the number of managed buckets
+/// @param set instance
+/// @return true when successfully expanded; false otherwise
+static bool ohset_rehash(ohset_t *restrict set) {
 
   const uint32_t old_bucket_count = set->bucket_count;
-  const uint8_t *old_buckets = set->buckets;
+  uint8_t *old_buckets = set->buckets;
 
   set->bucket_count = old_bucket_count == 0 ? 8 : set->bucket_count * 2;
   size_t new_size = set->bucket_count * set->bucket_size;
   set->buckets = set->config.alloc(set->config.alloc_ctx, NULL, new_size);
+  if (set->buckets == NULL) {
+    OHSET_ABORT("Failed to reallocate buckets; allocator returned NULL");
+    set->buckets = old_buckets;
+    set->bucket_count = old_bucket_count;
+    return false;
+  }
+
   set->item_count = 0;
   memset(set->buckets, 0, new_size);
 
@@ -82,7 +92,8 @@ static void ohset_rehash(ohset_t *restrict set) {
     }
   }
 
-  set->config.alloc(set->config.alloc_ctx, (void *)old_buckets, 0);
+  set->config.alloc(set->config.alloc_ctx, old_buckets, 0);
+  return true;
 }
 
 static ohset_bucket_t ohset_bucket(
@@ -221,11 +232,10 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
                                 : ((float)(set->item_count + 1) / (float)(set->bucket_count));
 
   if (load_factor > set->config.load_factor) {
-    ohset_rehash(set);
-    bucket = ohset_bucket(set, value, true);
-    if (bucket.state == NULL) {
+    if (!ohset_rehash(set)) {
       return false;
     }
+    bucket = ohset_bucket(set, value, true);
   }
 
   memcpy((uint8_t *)bucket.item, value, set->config.item_size);

@@ -3,10 +3,13 @@
 
 TEST(add) {
 
+  ASSERT_FALSE(ohset_add(NULL, NULL));
+
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .item_size = sizeof(size_t),
   });
   ASSERT_NON_NULL(set);
+  ASSERT_FALSE(ohset_add(set, NULL));
 
   for (size_t i = 42; i < 52; ++i) {
     ASSERT(ohset_add(set, &i));

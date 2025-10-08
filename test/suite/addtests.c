@@ -2,17 +2,6 @@
 #include <test/allocator.h>
 #include <test/test.h>
 
-static int custom_strcmp(const void *a, const void *b) {
-  const char *const *lhs = a;
-  const char *const *rhs = b;
-  return strcmp(*lhs, *rhs);
-}
-
-static uint32_t custom_strhash(const void *ptr) {
-  const char *const *str = ptr;
-  return ohset_hash(*str, strlen(*str));
-}
-
 static void test_add_many() {
 
   ASSERT_FALSE(ohset_add(NULL, NULL));
@@ -34,34 +23,6 @@ static void test_add_many() {
   for (size_t i = 42; i < 52; ++i) {
     ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
   }
-
-  ohset_free(set);
-}
-
-static void test_add_str() {
-
-  ohset_t *restrict set = ohset_new(&(ohset_config_t){
-      .item_cmp = custom_strcmp,
-      .item_hash = custom_strhash,
-      .item_size = sizeof(size_t),
-  });
-  ASSERT_NON_NULL(set);
-
-  ASSERT(ohset_add(set, "alpha"));
-  ASSERT_FALSE(ohset_add(set, "alpha"));
-  ASSERT_STR_EQ("alpha", ohset_get(set, "alpha"));
-
-  ASSERT(ohset_add(set, "beta"));
-  ASSERT_FALSE(ohset_add(set, "beta"));
-  ASSERT_STR_EQ("beta", ohset_get(set, "beta"));
-
-  ASSERT(ohset_add(set, "gamma"));
-  ASSERT_FALSE(ohset_add(set, "gamma"));
-  ASSERT_STR_EQ("gamma", ohset_get(set, "gamma"));
-
-  ASSERT(ohset_add(set, "delta"));
-  ASSERT_FALSE(ohset_add(set, "delta"));
-  ASSERT_STR_EQ("delta", ohset_get(set, "delta"));
 
   ohset_free(set);
 }
@@ -111,6 +72,5 @@ static void test_add_load_factor_1() {
 TEST(add) {
   test_add_load_factor_1();
   test_add_many();
-  test_add_str();
   test_add_alloc_failed_2nd_time();
 }

@@ -1,3 +1,4 @@
+#include <inttypes.h> // PRIu32
 #include <ohset.h>
 #include <stdio.h>  // printf
 #include <stdlib.h> // malloc, realloc, free
@@ -166,7 +167,7 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
   }
 
   if (config->item_size == 0) {
-    OHSET_ABORT("%zu is not a valid item size", config->item_size);
+    OHSET_ABORT("%" PRIu32 " is not a valid item size", config->item_size);
     return NULL;
   }
 

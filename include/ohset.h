@@ -21,9 +21,9 @@ typedef struct ohset_config_t {
 
   void (*item_dtor)(void *, void *, void *(*alloc)(void *, void *, size_t));
 
-  size_t (*hash)(const void *);
+  uint32_t (*hash)(const void *);
 
-  size_t item_size;
+  uint32_t item_size;
 
   float load_factor;
 

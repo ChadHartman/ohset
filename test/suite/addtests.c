@@ -24,6 +24,11 @@ static void test_add_many() {
     ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
   }
 
+  // Ensure all items are present
+  for (size_t i = 42; i < 52; ++i) {
+    ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
+  }
+
   ohset_free(set);
 }
 
@@ -35,6 +40,22 @@ static void test_add_str() {
       .item_size = sizeof(size_t),
   });
   ASSERT_NON_NULL(set);
+
+  ASSERT(ohset_add(set, "alpha"));
+  ASSERT_FALSE(ohset_add(set, "alpha"));
+  ASSERT_STR_EQ("alpha", ohset_get(set, "alpha"));
+
+  ASSERT(ohset_add(set, "beta"));
+  ASSERT_FALSE(ohset_add(set, "beta"));
+  ASSERT_STR_EQ("beta", ohset_get(set, "beta"));
+
+  ASSERT(ohset_add(set, "gamma"));
+  ASSERT_FALSE(ohset_add(set, "gamma"));
+  ASSERT_STR_EQ("gamma", ohset_get(set, "gamma"));
+
+  ASSERT(ohset_add(set, "delta"));
+  ASSERT_FALSE(ohset_add(set, "delta"));
+  ASSERT_STR_EQ("delta", ohset_get(set, "delta"));
 
   ohset_free(set);
 }
@@ -58,6 +79,7 @@ static void test_add_alloc_failed_2nd_time() {
 }
 
 TEST(add) {
+  // TODO: load_factor of 1
   test_add_many();
   test_add_str();
   test_add_alloc_failed_2nd_time();

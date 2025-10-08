@@ -19,7 +19,6 @@ TEST(new) {
 
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .item_size = sizeof(size_t),
-      .load_factor = 0.75f,
   });
 
   ASSERT_NON_NULL(set);

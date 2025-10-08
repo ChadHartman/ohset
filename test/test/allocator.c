@@ -3,7 +3,7 @@
 
 #include "allocator.h"
 
-void *alloc(void *ctx, void *ptr, size_t size) {
+void *allocator_alloc(void *ctx, void *ptr, size_t size) {
 
   allocator_t *restrict a = ctx;
   if (size == 0) {
@@ -24,13 +24,13 @@ void *alloc(void *ctx, void *ptr, size_t size) {
   return realloc(ptr, size);
 }
 
-char *alloc_strdup(allocator_t *restrict allocator, const char *restrict src) {
+char *allocator_strdup(allocator_t *restrict allocator, const char *restrict src) {
 
   if (allocator == NULL || src == NULL) {
     return NULL;
   }
 
-  char *res = alloc(allocator, NULL, strlen(src) + 1);
+  char *res = allocator_alloc(allocator, NULL, strlen(src) + 1);
   if (res == NULL) {
     return NULL;
   }

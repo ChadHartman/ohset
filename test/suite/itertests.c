@@ -43,6 +43,50 @@ static void test_iter_many() {
   ohset_free(set);
 }
 
+static void test_iter_next_invalid() {
+
+  ohset_t *restrict set = ohset_new(&(ohset_config_t){
+      .item_size = sizeof(size_t),
+  });
+  ASSERT_NON_NULL(set);
+
+  size_t item = 42;
+  ASSERT(ohset_add(set, &item));
+
+  ohset_iter_t *iter = ohset_iter(set);
+  ASSERT_NON_NULL(iter);
+
+  item = 43;
+  ASSERT(ohset_add(set, &item));
+
+  ASSERT_NULL(ohset_iter_next(iter));
+
+  ohset_free(set);
+}
+
+static void test_iter_value_invalid() {
+
+  ohset_t *restrict set = ohset_new(&(ohset_config_t){
+      .item_size = sizeof(size_t),
+  });
+  ASSERT_NON_NULL(set);
+
+  size_t item = 42;
+  ASSERT(ohset_add(set, &item));
+
+  ohset_iter_t *iter = ohset_iter(set);
+  ASSERT_NON_NULL(iter);
+
+  item = 43;
+  ASSERT(ohset_add(set, &item));
+
+  ASSERT_NULL(ohset_iter_value(iter));
+
+  ohset_free(set);
+}
+
 TEST(iter) {
   test_iter_many();
+  test_iter_next_invalid();
+  test_iter_value_invalid();
 }

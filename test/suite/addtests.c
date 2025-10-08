@@ -62,7 +62,7 @@ static void test_add_alloc_failed_2nd_time() {
       .max_times = 1,
   };
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
-      .alloc = alloc,
+      .alloc = allocator_alloc,
       .alloc_ctx = &allocator,
       .item_size = sizeof(size_t),
   });

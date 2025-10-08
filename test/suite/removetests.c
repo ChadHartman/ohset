@@ -55,7 +55,7 @@ static void test_remove_destructor() {
 
   allocator_t allocator = {0};
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
-      .alloc = alloc,
+      .alloc = allocator_alloc,
       .alloc_ctx = &allocator,
       .item_cmp = (int (*)(const void *, const void *))strcmp,
       .item_hash = hash_str,
@@ -63,7 +63,7 @@ static void test_remove_destructor() {
       .item_size = sizeof(char *),
   });
 
-  ASSERT(ohset_add(set, alloc_strdup(&allocator, "foo")));
+  ASSERT(ohset_add(set, allocator_strdup(&allocator, "foo")));
   ASSERT(ohset_remove(set, "foo"));
   ASSERT_FALSE(ohset_remove(set, "foo"));
 

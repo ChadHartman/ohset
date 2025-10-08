@@ -11,6 +11,7 @@ typedef struct test_t {
 } test_t;
 
 TEST(add);
+TEST(alloc);
 TEST(get);
 TEST(hash);
 TEST(iter);
@@ -19,6 +20,7 @@ TEST(remove);
 
 const test_t tests[] = {
     TEST_REG(add),
+    TEST_REG(alloc),
     TEST_REG(get),
     TEST_REG(hash),
     TEST_REG(iter),

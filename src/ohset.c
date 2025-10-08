@@ -322,7 +322,7 @@ ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
     return NULL;
   }
 
-  for (; iter->index < iter->set->bucket_count; ++iter->index) {
+  for (++iter->index; iter->index < iter->set->bucket_count; ++iter->index) {
     ohset_bucket_t bucket = ohset_bucket_idx(iter->set, iter->index);
     if (*bucket.state == OHSET_BUCKET_POPULATED) {
       return iter;
@@ -355,7 +355,7 @@ void ohset_clear(ohset_t *restrict set) {
     return;
   }
 
-  for (ohset_iter_t *restrict iter = ohset_iter(set);
+  for (ohset_iter_t *iter = ohset_iter(set);
        iter != NULL;
        iter = ohset_iter_next(iter)) {
 

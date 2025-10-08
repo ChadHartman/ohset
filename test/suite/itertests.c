@@ -1,7 +1,7 @@
 #include <ohset.h>
 #include <test/test.h>
 
-TEST(iter) {
+static void test_iter_many() {
 
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .item_size = sizeof(char),
@@ -12,6 +12,7 @@ TEST(iter) {
     ASSERT(ohset_add(set, &c));
   }
 
+  ASSERT_NULL(ohset_iter(NULL));
   ohset_iter_t *iter = ohset_iter(set);
 
   ASSERT_NON_NULL(iter);
@@ -35,4 +36,8 @@ TEST(iter) {
   ASSERT_NULL(ohset_iter_next(iter));
 
   ohset_free(set);
+}
+
+TEST(iter) {
+  test_iter_many();
 }

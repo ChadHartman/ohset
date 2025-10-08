@@ -6,7 +6,9 @@ int main() {
 
   const size_t test_count = sizeof(tests) / sizeof(test_t);
   for (size_t i = 0; i < test_count; ++i) {
-    printf("| %s |\n", tests[i].name);
+    printf("+------------------+\n");
+    printf("| " COLOR_MAGENTA "%-16s" COLOR_RESET " |\n", tests[i].name);
+    printf("+------------------+\n\n");
     tests[i].func();
   }
 

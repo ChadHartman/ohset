@@ -380,6 +380,8 @@ void ohset_free(ohset_t *restrict set) {
   }
 
   ohset_clear(set);
+
+  set->config.alloc(set->config.alloc_ctx, set->buckets, 0);
   set->config.alloc(set->config.alloc_ctx, set, 0);
 }
 

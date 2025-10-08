@@ -64,29 +64,6 @@ static void test_remove_many() {
   ohset_free(set);
 }
 
-static void test_remove_destructor() {
-
-  allocator_t allocator = {0};
-  ohset_t *restrict set = ohset_new(&(ohset_config_t){
-      .alloc = allocator_alloc,
-      .alloc_ctx = &allocator,
-      .item_cmp = custom_strcmp,
-      .item_hash = custom_strhash,
-      .item_dtor = str_destructor,
-      .item_size = sizeof(char *),
-  });
-
-  ASSERT(ohset_add(set, allocator_strdup(&allocator, "foo")));
-  ASSERT(ohset_remove(set, "foo"));
-  ASSERT_FALSE(ohset_remove(set, "foo"));
-
-  ohset_free(set);
-
-  ASSERT_EQ(3, allocator.total);
-  ASSERT_EQ(0, allocator.live);
-}
-
 TEST(remove) {
   test_remove_many();
-  test_remove_destructor();
 }

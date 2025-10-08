@@ -2,27 +2,6 @@
 #include <test/allocator.h>
 #include <test/test.h>
 
-static void str_destructor(
-    void *alloc_ctx,
-    void *(*alloc)(void *, void *, size_t),
-    void *ptr) {
-
-  char **str = ptr;
-
-  alloc(alloc_ctx, *str, 0);
-}
-
-static int custom_strcmp(const void *a, const void *b) {
-  const char *const *lhs = a;
-  const char *const *rhs = b;
-  return strcmp(*lhs, *rhs);
-}
-
-static uint32_t custom_strhash(const void *ptr) {
-  const char *const *str = ptr;
-  return ohset_hash(*str, strlen(*str));
-}
-
 static void test_remove_many() {
 
   ASSERT_FALSE(ohset_remove(NULL, NULL));

@@ -25,6 +25,11 @@ ohset_dep = declare_dependency(
   include_directories: include_directories('./include/'),
   link_with: libohset)
 
+
+ex_dictionary = executable('example-dictionary', 
+    sources: files('./example/main-dictionary.c'),
+    dependencies: [ohset_dep])
+
 tests = executable('ohset-tests',
     sources: [
         'src/ohset.c',

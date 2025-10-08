@@ -268,6 +268,16 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
   return true;
 }
 
+void ohset_put(ohset_t *restrict set, const void *restrict value) {
+
+  if (ohset_add(set, value)) {
+    return;
+  }
+
+  ohset_remove(set, value);
+  ohset_add(set, value);
+}
+
 bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
 
   if (set == NULL) {

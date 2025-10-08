@@ -31,11 +31,9 @@ typedef struct ohset_config_t {
 
 ohset_t *ohset_new(const ohset_config_t *restrict config);
 
-const void *ohset_get(ohset_t *ohset, const void *value);
+const void *ohset_get(const ohset_t *restrict set, const void *restrict value);
 
-bool ohset_add(ohset_t *s, const void *value);
-
-bool ohset_put(ohset_t *s, const void *value);
+bool ohset_add(ohset_t *restrict set, const void *restrict value);
 
 bool ohset_remove(ohset_t *s, const void *value);
 

@@ -13,6 +13,7 @@ static void test_add_many() {
   ASSERT_FALSE(ohset_add(set, NULL));
 
   for (size_t i = 42; i < 52; ++i) {
+    ASSERT_FALSE(ohset_get(set, &i));
     ASSERT(ohset_add(set, &i));
     ASSERT_FALSE(ohset_add(set, &i));
     ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));

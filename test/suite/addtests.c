@@ -2,6 +2,11 @@
 #include <test/allocator.h>
 #include <test/test.h>
 
+static uint32_t hash_str(const void *ptr) {
+  const char *str = ptr;
+  return ohset_hash(str, strlen(str));
+}
+
 static void test_add_many() {
 
   ASSERT_FALSE(ohset_add(NULL, NULL));
@@ -18,6 +23,18 @@ static void test_add_many() {
     ASSERT_FALSE(ohset_add(set, &i));
     ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
   }
+
+  ohset_free(set);
+}
+
+static void test_add_str() {
+
+  ohset_t *restrict set = ohset_new(&(ohset_config_t){
+      .cmp = (int (*)(const void *, const void *))strcmp,
+      .hash = hash_str,
+      .item_size = sizeof(size_t),
+  });
+  ASSERT_NON_NULL(set);
 
   ohset_free(set);
 }
@@ -42,5 +59,6 @@ static void test_add_alloc_failed_2nd_time() {
 
 TEST(add) {
   test_add_many();
+  test_add_str();
   test_add_alloc_failed_2nd_time();
 }

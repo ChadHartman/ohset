@@ -47,6 +47,6 @@ ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter);
 
 const void *ohset_iter_value(ohset_iter_t *restrict iter);
 
-uint32_t ohset_hash(const uint8_t *restrict key, size_t len);
+uint32_t ohset_hash(const void *restrict key, size_t len);
 
 #endif

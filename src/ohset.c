@@ -253,12 +253,13 @@ void ohset_free(ohset_t *restrict set) {
   set->config.alloc(set->config.alloc_ctx, set, 0);
 }
 
-uint32_t ohset_hash(const uint8_t *restrict key, size_t len) {
+uint32_t ohset_hash(const void *restrict ptr, size_t len) {
 
-  if (key == NULL) {
+  if (ptr == NULL) {
     return 0;
   }
 
+  const uint8_t *restrict key = ptr;
   uint32_t h = 0;
   uint32_t k;
 

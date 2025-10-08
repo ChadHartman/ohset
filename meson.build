@@ -33,6 +33,11 @@ ex_int = executable('example-int',
     sources: files('./example/main-int.c'),
     dependencies: [ohset_dep])
 
+ex_alloc = executable('example-alloc', 
+    sources: files('./example/main-alloc.c'),
+    dependencies: [ohset_dep])
+
+
 tests = executable('ohset-tests',
     sources: [
         'src/ohset.c',
@@ -54,5 +59,6 @@ tests = executable('ohset-tests',
 # `ninja coverage` to generate coverage reports
 
 test('ohset-tests', tests)
+test('example-alloc', ex_alloc)
 test('example-dictionary', ex_dictionary)
 test('example-int', ex_int)

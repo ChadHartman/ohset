@@ -7,7 +7,20 @@ static void str_destructor(
     void *(*alloc)(void *, void *, size_t),
     void *ptr) {
 
-  alloc(alloc_ctx, ptr, 0);
+  char **str = ptr;
+
+  alloc(alloc_ctx, *str, 0);
+}
+
+static int custom_strcmp(const void *a, const void *b) {
+  const char *const *lhs = a;
+  const char *const *rhs = b;
+  return strcmp(*lhs, *rhs);
+}
+
+static uint32_t custom_strhash(const void *ptr) {
+  const char *const *str = ptr;
+  return ohset_hash(*str, strlen(*str));
 }
 
 static void test_remove_many() {
@@ -57,8 +70,8 @@ static void test_remove_destructor() {
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .alloc = allocator_alloc,
       .alloc_ctx = &allocator,
-      .item_cmp = (int (*)(const void *, const void *))strcmp,
-      .item_hash = hash_str,
+      .item_cmp = custom_strcmp,
+      .item_hash = custom_strhash,
       .item_dtor = str_destructor,
       .item_size = sizeof(char *),
   });

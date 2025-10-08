@@ -15,8 +15,6 @@
 #define COLOR_CYAN "\x1b[36m"
 #define COLOR_RESET "\x1b[0m"
 
-uint32_t hash_str(const void *ptr);
-
 #define TEST(name) void test_##name()
 
 #if 1

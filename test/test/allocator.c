@@ -40,13 +40,18 @@ static void allocator_record(
     allocator->records = realloc(allocator->records, sizeof(alloc_record_t) * ++allocator->record_count);
     allocator->records[allocator->record_count - 1] = key;
     qsort(allocator->records, allocator->record_count, sizeof(alloc_record_t), alloc_record_cmp);
-  } else {
-    if (size == 0) {
-      found->live = false;
+    if (key.live) {
+      TEST_LOG("Allocated %p sized %zu", address, size);
     } else {
-      found->live = true;
-      found->size = size;
+      printf("Recorded free %p not previously present\n", address);
     }
+  } else if (size == 0) {
+    TEST_LOG("Freed %p", address);
+    found->live = false;
+  } else {
+    TEST_LOG("Allocated %p sized %zu", address, size);
+    found->live = true;
+    found->size = size;
   }
 }
 

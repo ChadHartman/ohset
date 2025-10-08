@@ -29,6 +29,7 @@ tests = executable('ohset-tests',
     sources: [
         'src/ohset.c',
         'test/main.c',
+        'test/suite/addtests.c',
         'test/suite/hashtests.c',
         'test/suite/newtests.c'
     ],

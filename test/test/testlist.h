@@ -10,10 +10,12 @@ typedef struct test_t {
   void (*func)();
 } test_t;
 
+TEST(add);
 TEST(hash);
 TEST(new);
 
 const test_t tests[] = {
+    TEST_REG(add),
     TEST_REG(hash),
     TEST_REG(new),
 };

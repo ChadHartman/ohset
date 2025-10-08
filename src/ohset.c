@@ -210,7 +210,7 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
   }
 
   ohset_bucket_t bucket = ohset_bucket(set, value, true);
-  if (bucket.state == NULL || OHSET_BUCKET_POPULATED == *bucket.state) {
+  if (bucket.state != NULL && OHSET_BUCKET_POPULATED == *bucket.state) {
     return false;
   }
 

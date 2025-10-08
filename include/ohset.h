@@ -37,11 +37,11 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value);
 
 bool ohset_remove(ohset_t *restrict set, const void *restrict value);
 
-void ohset_clear(ohset_t *s);
+void ohset_clear(ohset_t *restrict set);
 
 void ohset_free(ohset_t *restrict set);
 
-ohset_iter_t *ohset_iter(ohset_t *s);
+ohset_iter_t *ohset_iter(const ohset_t *restrict set);
 
 ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter);
 

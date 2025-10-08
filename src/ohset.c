@@ -25,6 +25,12 @@ static const uint8_t OHSET_BUCKET_NULL = 0;
 static const uint8_t OHSET_BUCKET_POPULATED = 1;
 static const uint8_t OHSET_BUCKET_TOMBSTONED = 2;
 
+struct ohset_iter_t {
+  ohset_t *set;
+  uint32_t index;
+  bool valid;
+};
+
 struct ohset_t {
 
   ohset_config_t config;
@@ -34,6 +40,8 @@ struct ohset_t {
   uint8_t *buckets;
   uint32_t bucket_count;
   uint32_t bucket_size;
+
+  ohset_iter_t iter;
 };
 
 typedef struct ohset_bucket_t {
@@ -94,7 +102,19 @@ static bool ohset_rehash(ohset_t *restrict set) {
   return true;
 }
 
-static ohset_bucket_t ohset_bucket(
+static ohset_bucket_t ohset_bucket_idx(
+    const ohset_t *restrict set,
+    uint32_t idx) {
+
+  const uint8_t *item = set->buckets + (idx * set->bucket_size);
+
+  return (ohset_bucket_t){
+      .item = item,
+      .state = item + set->config.item_size,
+  };
+}
+
+static ohset_bucket_t ohset_bucket_val(
     const ohset_t *restrict set,
     const void *restrict value,
     bool writable) {
@@ -110,37 +130,27 @@ static ohset_bucket_t ohset_bucket(
 
   for (uint32_t i = 0; i < set->bucket_count; ++i) {
 
-    const uint8_t *item = set->buckets + (idx * set->bucket_size);
-    const uint8_t *state = item + set->config.item_size;
+    ohset_bucket_t bucket = ohset_bucket_idx(set, idx);
 
-    switch (*state) {
+    switch (*bucket.state) {
     case OHSET_BUCKET_NULL:
       // Acceptable for either state
-      return (ohset_bucket_t){
-          .item = item,
-          .state = state,
-      };
+      return bucket;
 
     case OHSET_BUCKET_POPULATED: {
       const int res = set->config.item_cmp == NULL
-                          ? memcmp(value, item, set->config.item_size)
-                          : set->config.item_cmp(value, item);
+                          ? memcmp(value, bucket.item, set->config.item_size)
+                          : set->config.item_cmp(value, bucket.item);
       if (res == 0) {
-        return (ohset_bucket_t){
-            .item = item,
-            .state = state,
-        };
+        return bucket;
       }
     } break;
 
     case OHSET_BUCKET_TOMBSTONED:
       if (writable) {
-        return (ohset_bucket_t){
-            .item = item,
-            .state = state,
-        };
+        return bucket;
       }
-      // Need to keep looking, could be another value
+      // Need to keep looking, could be another open-addressed value
       break;
 
     default:
@@ -179,6 +189,7 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
   *set = (ohset_t){
       .config = *config,
       .bucket_size = sizeof(uint8_t) + config->item_size,
+      .iter.set = set,
   };
 
   set->config.alloc = alloc;
@@ -204,7 +215,7 @@ const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
     return false;
   }
 
-  ohset_bucket_t bucket = ohset_bucket(set, value, false);
+  ohset_bucket_t bucket = ohset_bucket_val(set, value, false);
 
   return bucket.state != NULL && *bucket.state == OHSET_BUCKET_POPULATED
              ? bucket.item
@@ -223,12 +234,12 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
     return false;
   }
 
-  ohset_bucket_t bucket = ohset_bucket(set, value, true);
+  ohset_bucket_t bucket = ohset_bucket_val(set, value, true);
   if (bucket.state != NULL && OHSET_BUCKET_POPULATED == *bucket.state) {
     return false;
   }
 
-  // TODO s->iterator.mode = ITERATOR_INVALIDATED;
+  set->iter.valid = false;
   const float load_factor = set->bucket_count == 0
                                 ? 2.0f
                                 // +1 for the new item
@@ -238,7 +249,7 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
     if (!ohset_rehash(set)) {
       return false;
     }
-    bucket = ohset_bucket(set, value, true);
+    bucket = ohset_bucket_val(set, value, true);
   }
 
   memcpy((uint8_t *)bucket.item, value, set->config.item_size);
@@ -259,15 +270,14 @@ bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
     return false;
   }
 
-  ohset_bucket_t bucket = ohset_bucket(set, value, false);
+  ohset_bucket_t bucket = ohset_bucket_val(set, value, false);
 
   if (bucket.state == NULL || *bucket.state == OHSET_BUCKET_NULL || *bucket.state == OHSET_BUCKET_TOMBSTONED) {
     // nothing to remove
     return false;
   }
 
-  // TODO s->iterator.mode = ITERATOR_INVALIDATED;
-
+  set->iter.valid = false;
   if (set->config.item_dtor) {
     set->config.item_dtor(
         set->config.alloc_ctx,
@@ -280,12 +290,86 @@ bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
   return true;
 }
 
+ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
+
+  if (set == NULL) {
+    OHSET_ABORT("ohset_iter(NULL) was called");
+    return false;
+  }
+
+  ohset_iter_t *restrict iter = (ohset_iter_t *)&set->iter;
+  for (iter->index = 0; iter->index < set->bucket_count; ++iter->index) {
+    ohset_bucket_t bucket = ohset_bucket_idx(set, iter->index);
+    if (*bucket.state == OHSET_BUCKET_POPULATED) {
+      iter->valid = true;
+      return iter;
+    }
+  }
+
+  iter->valid = false;
+  return NULL;
+}
+
+ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
+
+  if (iter == NULL) {
+    OHSET_ABORT("ohset_iter_next(NULL) was called");
+    return NULL;
+  }
+
+  if (!iter->valid) {
+    OHSET_ABORT("Invalid iterator provided");
+    return NULL;
+  }
+
+  for (; iter->index < iter->set->bucket_count; ++iter->index) {
+    ohset_bucket_t bucket = ohset_bucket_idx(iter->set, iter->index);
+    if (*bucket.state == OHSET_BUCKET_POPULATED) {
+      return iter;
+    }
+  }
+
+  iter->valid = false;
+  return NULL;
+}
+
+const void *ohset_iter_value(ohset_iter_t *restrict iter) {
+
+  if (iter == NULL) {
+    OHSET_ABORT("ohset_iter_value(NULL) was called");
+    return NULL;
+  }
+
+  if (!iter->valid) {
+    OHSET_ABORT("Invalid iterator provided");
+    return NULL;
+  }
+
+  return ohset_bucket_idx(iter->set, iter->index).item;
+}
+
+void ohset_clear(ohset_t *restrict set) {
+
+  if (set == NULL) {
+    OHSET_ABORT("ohset_clear(NULL) was called");
+    return;
+  }
+
+  for (ohset_iter_t *restrict iter = ohset_iter(set);
+       iter != NULL;
+       iter = ohset_iter_next(iter)) {
+
+    ohset_remove(set, ohset_iter_value(iter));
+  }
+}
+
 void ohset_free(ohset_t *restrict set) {
 
   if (set == NULL) {
     return;
   }
 
+  ohset_clear(set);
   set->config.alloc(set->config.alloc_ctx, set, 0);
 }
 

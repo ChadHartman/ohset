@@ -13,6 +13,7 @@ static void str_destructor(
 static void test_remove_many() {
 
   ASSERT_FALSE(ohset_remove(NULL, NULL));
+  ohset_clear(NULL); // Verify noop
 
   const size_t item = 42;
   ohset_t *restrict set = ohset_new(&(ohset_config_t){

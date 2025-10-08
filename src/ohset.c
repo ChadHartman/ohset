@@ -203,6 +203,16 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
   return set;
 }
 
+uint32_t ohset_count(const ohset_t *restrict set) {
+
+  if (set == NULL) {
+    OHSET_ABORT("ohset_count(NULL) was called");
+    return 0;
+  }
+
+  return set->item_count;
+}
+
 const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
 
   if (set == NULL) {
@@ -355,11 +365,11 @@ void ohset_clear(ohset_t *restrict set) {
     return;
   }
 
-  for (ohset_iter_t *iter = ohset_iter(set);
-       iter != NULL;
-       iter = ohset_iter_next(iter)) {
-
-    ohset_remove(set, ohset_iter_value(iter));
+  for (uint32_t i = 0; i < set->bucket_count; ++i) {
+    ohset_bucket_t bucket = ohset_bucket_idx(set, i);
+    if (*bucket.state == OHSET_BUCKET_POPULATED) {
+      ohset_remove(set, bucket.item);
+    }
   }
 }
 

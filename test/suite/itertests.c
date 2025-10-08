@@ -3,10 +3,15 @@
 
 static void test_iter_many() {
 
+  ASSERT_NULL(ohset_iter(NULL));
+  ASSERT_NULL(ohset_iter_next(NULL));
+  ASSERT_NULL(ohset_iter_value(NULL));
+
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .item_size = sizeof(char),
   });
   ASSERT_NON_NULL(set);
+  ASSERT_NULL(ohset_iter(set));
 
   for (char c = 'a'; c <= 'e'; ++c) {
     ASSERT(ohset_add(set, &c));

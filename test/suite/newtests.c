@@ -10,6 +10,7 @@ static void *test_null_alloc(void *ctx, void *ptr, size_t size) {
 
 TEST(new) {
 
+  ASSERT_EQ(0, ohset_count(NULL));
   ASSERT_NULL(ohset_new(NULL));
   ASSERT_NULL(ohset_new(&(ohset_config_t){0}));
   ASSERT_NULL(ohset_new(&(ohset_config_t){
@@ -23,6 +24,7 @@ TEST(new) {
   });
 
   ASSERT_NON_NULL(set);
+  ASSERT_EQ(0, ohset_count(set));
 
   ohset_free(set);
   // Ensure noop

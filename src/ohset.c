@@ -88,8 +88,8 @@ static ohset_bucket_t ohset_bucket_idx(
   const uint8_t *bucket = buckets + (idx * (item_size + sizeof(uint8_t)));
 
   return (ohset_bucket_t){
-      .value = (uint8_t *)(bucket + sizeof(uint8_t)),
-      .state = (uint8_t *)bucket,
+      .value = (uint8_t *)bucket,
+      .state = (uint8_t *)(bucket + item_size),
   };
 }
 
@@ -165,7 +165,7 @@ static bool ohset_rehash(ohset_t *restrict set, uint32_t new_bucket_count) {
     const ohset_bucket_t src = ohset_bucket_idx(old_buckets, set->config.item_size, i);
     if (src.state != NULL && *src.state == OHSET_BUCKET_POPULATED) {
       ohset_bucket_t dst = ohset_bucket_val(set, src.value, true);
-      ohset_bucket_set(&dst, dst.value, set->config.item_size);
+      ohset_bucket_set(&dst, src.value, set->config.item_size);
     }
   }
 
@@ -222,12 +222,12 @@ uint32_t ohset_count(const ohset_t *restrict set) {
 const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
 
   if (set == NULL) {
-    OHSET_ABORT("ohset_add(NULL, ...) was called");
+    OHSET_ABORT("ohset_get(NULL, ...) was called");
     return false;
   }
 
   if (value == NULL) {
-    OHSET_ABORT("ohset_add(ohset_t@%p, NULL) was called", set);
+    OHSET_ABORT("ohset_get(ohset_t@%p, NULL) was called", set);
     return false;
   }
 

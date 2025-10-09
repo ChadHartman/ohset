@@ -63,13 +63,16 @@ static void test_add_load_factor_1() {
 
   // Ensure all items are present
   for (size_t i = 42; i < 52; ++i) {
-    ASSERT_EQ(i, *(size_t *)ohset_get(set, &i));
+    const size_t *value = ohset_get(set, &i);
+    ASSERT_NON_NULL(value);
+    ASSERT_EQ(i, *value);
   }
 
   ohset_free(set);
 }
 
 TEST(add) {
+
   test_add_load_factor_1();
   test_add_many();
   test_add_alloc_failed_2nd_time();

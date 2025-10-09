@@ -60,6 +60,8 @@ void ohset_clear(ohset_t *restrict set);
 
 void ohset_free(ohset_t *restrict set);
 
+uint32_t ohset_shrink(ohset_t *restrict set);
+
 ohset_iter_t *ohset_iter(const ohset_t *restrict set);
 
 ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter);

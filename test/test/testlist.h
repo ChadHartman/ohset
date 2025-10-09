@@ -16,7 +16,9 @@ TEST(get);
 TEST(hash);
 TEST(iter);
 TEST(new);
+TEST(put);
 TEST(remove);
+TEST(shrink);
 
 const test_t tests[] = {
     TEST_REG(add),
@@ -25,7 +27,9 @@ const test_t tests[] = {
     TEST_REG(hash),
     TEST_REG(iter),
     TEST_REG(new),
+    TEST_REG(put),
     TEST_REG(remove),
+    TEST_REG(shrink),
 };
 
 #endif

@@ -163,7 +163,7 @@ static bool ohset_rehash(ohset_t *restrict set, uint32_t new_bucket_count) {
 
   for (uint32_t i = 0; i < old_bucket_count; ++i) {
     const ohset_bucket_t src = ohset_bucket_idx(old_buckets, set->config.item_size, i);
-    if (src.state != NULL && *src.state == OHSET_BUCKET_POPULATED) {
+    if (*src.state == OHSET_BUCKET_POPULATED) {
       ohset_bucket_t dst = ohset_bucket_val(set, src.value, true);
       ohset_bucket_set(&dst, src.value, set->config.item_size);
     }
@@ -387,6 +387,20 @@ void ohset_clear(ohset_t *restrict set) {
       ohset_remove(set, bucket.value);
     }
   }
+}
+
+uint32_t ohset_shrink(ohset_t *restrict set) {
+
+  if (set == NULL) {
+    OHSET_ABORT("ohset_shrink(NULL) was called");
+    return 0;
+  }
+
+  const size_t bucket_size = sizeof(uint8_t) + set->config.item_size;
+  const size_t current_size = set->bucket_count * bucket_size;
+  ohset_rehash(set, set->item_count);
+  const size_t shrink_size = set->bucket_count * bucket_size;
+  return current_size - shrink_size;
 }
 
 void ohset_free(ohset_t *restrict set) {

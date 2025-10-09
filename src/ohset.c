@@ -34,19 +34,17 @@ struct ohset_iter_t {
 struct ohset_t {
 
   ohset_config_t config;
-
   uint32_t item_count;
 
   uint8_t *buckets;
   uint32_t bucket_count;
-  uint32_t bucket_size;
 
   ohset_iter_t iter;
 };
 
 typedef struct ohset_bucket_t {
-  const uint8_t *state;
-  const uint8_t *item;
+  uint8_t *state;
+  uint8_t *value;
 } ohset_bucket_t;
 
 static inline uint32_t ohset_hash_scramble(uint32_t k) {
@@ -69,48 +67,29 @@ static void *ohset_default_alloc(void *ctx, void *ptr, size_t size) {
   return malloc(size);
 }
 
-/// @brief Attempts to expand the number of managed buckets
-/// @param set instance
-/// @return true when successfully expanded; false otherwise
-static bool ohset_rehash(ohset_t *restrict set) {
+static void ohset_bucket_set(
+    ohset_bucket_t *restrict bucket,
+    const void *restrict value,
+    uint32_t item_size) {
 
-  const uint32_t old_bucket_count = set->bucket_count;
-  uint8_t *old_buckets = set->buckets;
-
-  set->bucket_count = old_bucket_count == 0 ? 8 : set->bucket_count * 2;
-  size_t new_size = set->bucket_count * set->bucket_size;
-  set->buckets = set->config.alloc(set->config.alloc_ctx, NULL, new_size);
-  if (set->buckets == NULL) {
-    OHSET_ABORT("Failed to reallocate buckets; allocator returned NULL");
-    set->buckets = old_buckets;
-    set->bucket_count = old_bucket_count;
-    return false;
+  if (value == NULL) {
+    *bucket->state = OHSET_BUCKET_TOMBSTONED;
+  } else {
+    *bucket->state = OHSET_BUCKET_POPULATED;
+    memcpy(bucket->value, value, item_size);
   }
-
-  set->item_count = 0;
-  memset(set->buckets, 0, new_size);
-
-  for (uint32_t i = 0; i < old_bucket_count; ++i) {
-    const uint8_t *bucket = old_buckets + (i * set->bucket_size);
-    uint8_t state = *((const uint8_t *)(bucket + set->config.item_size));
-    if (state == OHSET_BUCKET_POPULATED) {
-      ohset_add(set, bucket);
-    }
-  }
-
-  set->config.alloc(set->config.alloc_ctx, old_buckets, 0);
-  return true;
 }
 
 static ohset_bucket_t ohset_bucket_idx(
-    const ohset_t *restrict set,
+    const uint8_t *restrict buckets,
+    uint32_t item_size,
     uint32_t idx) {
 
-  const uint8_t *item = set->buckets + (idx * set->bucket_size);
+  const uint8_t *bucket = buckets + (idx * (item_size + sizeof(uint8_t)));
 
   return (ohset_bucket_t){
-      .item = item,
-      .state = item + set->config.item_size,
+      .value = (uint8_t *)(bucket + sizeof(uint8_t)),
+      .state = (uint8_t *)bucket,
   };
 }
 
@@ -130,7 +109,7 @@ static ohset_bucket_t ohset_bucket_val(
 
   for (uint32_t i = 0; i < set->bucket_count; ++i) {
 
-    ohset_bucket_t bucket = ohset_bucket_idx(set, idx);
+    ohset_bucket_t bucket = ohset_bucket_idx(set->buckets, set->config.item_size, idx);
 
     switch (*bucket.state) {
     case OHSET_BUCKET_NULL:
@@ -139,8 +118,8 @@ static ohset_bucket_t ohset_bucket_val(
 
     case OHSET_BUCKET_POPULATED: {
       const int res = set->config.item_cmp == NULL
-                          ? memcmp(value, bucket.item, set->config.item_size)
-                          : set->config.item_cmp(value, bucket.item);
+                          ? memcmp(value, bucket.value, set->config.item_size)
+                          : set->config.item_cmp(value, bucket.value);
       if (res == 0) {
         return bucket;
       }
@@ -166,6 +145,34 @@ static ohset_bucket_t ohset_bucket_val(
   return (ohset_bucket_t){0};
 }
 
+static bool ohset_rehash(ohset_t *restrict set, uint32_t new_bucket_count) {
+
+  const uint32_t new_size = new_bucket_count * (set->config.item_size + sizeof(uint8_t));
+  uint8_t *restrict new_buckets = set->config.alloc(set->config.alloc_ctx, NULL, new_size);
+
+  if (new_buckets == NULL) {
+    OHSET_ABORT("Failed to reallocate buckets; allocator returned NULL");
+    return false;
+  }
+
+  const uint32_t old_bucket_count = set->bucket_count;
+  uint8_t *restrict old_buckets = set->buckets;
+  set->bucket_count = new_bucket_count;
+  set->buckets = new_buckets;
+  memset(set->buckets, 0, new_size);
+
+  for (uint32_t i = 0; i < old_bucket_count; ++i) {
+    const ohset_bucket_t src = ohset_bucket_idx(old_buckets, set->config.item_size, i);
+    if (src.state != NULL && *src.state == OHSET_BUCKET_POPULATED) {
+      ohset_bucket_t dst = ohset_bucket_val(set, src.value, true);
+      ohset_bucket_set(&dst, dst.value, set->config.item_size);
+    }
+  }
+
+  set->config.alloc(set->config.alloc_ctx, old_buckets, 0);
+  return true;
+}
+
 ohset_t *ohset_new(const ohset_config_t *restrict config) {
 
   if (config == NULL) {
@@ -188,7 +195,6 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
 
   *set = (ohset_t){
       .config = *config,
-      .bucket_size = sizeof(uint8_t) + config->item_size,
       .iter.set = set,
   };
 
@@ -228,7 +234,7 @@ const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
   ohset_bucket_t bucket = ohset_bucket_val(set, value, false);
 
   return bucket.state != NULL && *bucket.state == OHSET_BUCKET_POPULATED
-             ? bucket.item
+             ? bucket.value
              : NULL;
 }
 
@@ -256,14 +262,14 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
                                 : ((float)(set->item_count + 1) / (float)(set->bucket_count));
 
   if (load_factor > set->config.load_factor) {
-    if (!ohset_rehash(set)) {
+    const uint32_t new_bucket_count = set->bucket_count == 0 ? 8 : set->bucket_count * 2;
+    if (!ohset_rehash(set, new_bucket_count)) {
       return false;
     }
     bucket = ohset_bucket_val(set, value, true);
   }
 
-  memcpy((uint8_t *)bucket.item, value, set->config.item_size);
-  *((uint8_t *)bucket.state) = (uint8_t)OHSET_BUCKET_POPULATED;
+  ohset_bucket_set(&bucket, value, set->config.item_size);
   ++set->item_count;
   return true;
 }
@@ -302,10 +308,10 @@ bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
     set->config.item_dtor(
         set->config.alloc_ctx,
         set->config.alloc,
-        (void *)bucket.item);
+        bucket.value);
   }
 
-  *(uint8_t *)bucket.state = OHSET_BUCKET_TOMBSTONED;
+  ohset_bucket_set(&bucket, NULL, set->config.item_size);
   --set->item_count;
   return true;
 }
@@ -319,7 +325,7 @@ ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
 
   ohset_iter_t *restrict iter = (ohset_iter_t *)&set->iter;
   for (iter->index = 0; iter->index < set->bucket_count; ++iter->index) {
-    ohset_bucket_t bucket = ohset_bucket_idx(set, iter->index);
+    ohset_bucket_t bucket = ohset_bucket_idx(set->buckets, set->config.item_size, iter->index);
     if (*bucket.state == OHSET_BUCKET_POPULATED) {
       iter->valid = true;
       return iter;
@@ -343,7 +349,7 @@ ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
   }
 
   for (++iter->index; iter->index < iter->set->bucket_count; ++iter->index) {
-    ohset_bucket_t bucket = ohset_bucket_idx(iter->set, iter->index);
+    ohset_bucket_t bucket = ohset_bucket_idx(iter->set->buckets, iter->set->config.item_size, iter->index);
     if (*bucket.state == OHSET_BUCKET_POPULATED) {
       return iter;
     }
@@ -365,7 +371,7 @@ const void *ohset_iter_value(ohset_iter_t *restrict iter) {
     return NULL;
   }
 
-  return ohset_bucket_idx(iter->set, iter->index).item;
+  return ohset_bucket_idx(iter->set->buckets, iter->set->config.item_size, iter->index).value;
 }
 
 void ohset_clear(ohset_t *restrict set) {
@@ -376,9 +382,9 @@ void ohset_clear(ohset_t *restrict set) {
   }
 
   for (uint32_t i = 0; i < set->bucket_count; ++i) {
-    ohset_bucket_t bucket = ohset_bucket_idx(set, i);
+    ohset_bucket_t bucket = ohset_bucket_idx(set->buckets, set->config.item_size, i);
     if (*bucket.state == OHSET_BUCKET_POPULATED) {
-      ohset_remove(set, bucket.item);
+      ohset_remove(set, bucket.value);
     }
   }
 }

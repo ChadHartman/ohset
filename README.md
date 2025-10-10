@@ -1,6 +1,17 @@
 # Open-addressing Hash Set
 
-`ohset` is a pure-c hash set implementation utilizing open addressing. 
+`ohset` is a pure-c hash set implementation utilizing open addressing with the following features:
+
+* Custom allocator support
+* c99 minimum standard
+* No dependencies
+* Simple import
+    * Drag and drop `ohset.h` & `ohset.c`
+    * Meson import
+* Robust test coverage
+    * Lines: 99.2%
+    * Functions: 100.0%
+    * Branches: 100.0%
 
 ## Sample Usages
 
@@ -223,3 +234,7 @@ int main() {
   return 0;
 }
 ```
+
+## Integration
+
+`./includes/ohset.h` & `./src/ohset.c` may be dropped into a project, or meson may be used as well.

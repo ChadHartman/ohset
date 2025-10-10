@@ -21,32 +21,57 @@
   abort()
 #endif // OHSET_NO_ABORT
 
+/// @brief Bucket flag to indicate it has never been used
 static const uint8_t OHSET_BUCKET_NULL = 0;
+
+/// @brief Bucket flag indicating it is populated
 static const uint8_t OHSET_BUCKET_POPULATED = 1;
+
+/// @brief Bucket flag indicating that is was once populated; but now vacated.
+///   This communicates that the bucket is available for writing but open
+///   address chaining should continue
 static const uint8_t OHSET_BUCKET_TOMBSTONED = 2;
 
+/// @brief Indicate that there are no buckets available
+static const uint8_t OHSET_BUCKET_AT_CAPACITY = 3;
+
 struct ohset_iter_t {
+
+  /// @brief Owning set
   ohset_t *set;
+
+  /// @brief Current bucket offset
   uint32_t index;
+
+  /// @brief Flag indicating no modifications occurred
   bool valid;
 };
 
 struct ohset_t {
 
+  /// @brief Client-provided configuration
   ohset_config_t config;
+
+  /// @brief Number of stored items
   uint32_t item_count;
 
+  /// @brief Pointer to bucket raw bytes
   uint8_t *buckets;
+
+  /// @brief Number of buckets currently allocated
   uint32_t bucket_count;
 
+  /// @brief Preallocated iterator to return
   ohset_iter_t iter;
 };
 
+/// @brief Ephemeral bucket struct
 typedef struct ohset_bucket_t {
   uint8_t *state;
   uint8_t *value;
 } ohset_bucket_t;
 
+/// @brief MurmurHash3 scramble function
 static inline uint32_t ohset_hash_scramble(uint32_t k) {
   k *= 0xcc9e2d51;
   k = (k << 15) | (k >> 17);
@@ -54,6 +79,11 @@ static inline uint32_t ohset_hash_scramble(uint32_t k) {
   return k;
 }
 
+/// @brief Default allocator to use when none was provided
+/// @param ctx unused
+/// @param ptr pointer to free
+/// @param size to malloc
+/// @return pointer to the malloc'd block or NULL if size was 0
 static void *ohset_default_alloc(void *ctx, void *ptr, size_t size) {
 
   (void)ctx;
@@ -67,6 +97,10 @@ static void *ohset_default_alloc(void *ctx, void *ptr, size_t size) {
   return malloc(size);
 }
 
+/// @brief Set the value in the provided bucket
+/// @param bucket to update
+/// @param value to write; or NULL to tombstone
+/// @param item_size size of the item to write
 static void ohset_bucket_set(
     ohset_bucket_t *restrict bucket,
     const void *restrict value,
@@ -80,6 +114,11 @@ static void ohset_bucket_set(
   }
 }
 
+/// @brief Retrieve a bucket by index; this will always return a populated bucket
+/// @param buckets to search
+/// @param item_size in bytes of a single item
+/// @param idx bucket offset
+/// @return the corresponding bucket
 static ohset_bucket_t ohset_bucket_idx(
     const uint8_t *restrict buckets,
     uint32_t item_size,
@@ -93,13 +132,21 @@ static ohset_bucket_t ohset_bucket_idx(
   };
 }
 
+/// @brief Retrieve a bucket by value; possibly returning an invalid bucket if
+///   there were none available
+/// @param set instance
+/// @param value to search
+/// @param writable when true; NULL and TOMBSTONED buckets are returned; when
+///   false NULL or POPULATED may be returned
+/// @return Corresponding bucket (NOTE: it's fields may be NULL if there
+///   weren't enough buckets)
 static ohset_bucket_t ohset_bucket_val(
     const ohset_t *restrict set,
     const void *restrict value,
     bool writable) {
 
   if (set->bucket_count == 0) {
-    return (ohset_bucket_t){0};
+    return (ohset_bucket_t){.state = (uint8_t *)&OHSET_BUCKET_AT_CAPACITY};
   }
 
   const uint32_t digest = set->config.item_hash == NULL
@@ -141,10 +188,15 @@ static ohset_bucket_t ohset_bucket_val(
     idx = (idx + 1) % set->bucket_count;
   }
 
-  // Load factor must be 1
-  return (ohset_bucket_t){0};
+  // Load factor must be 1; all buckets are filled
+  return (ohset_bucket_t){.state = (uint8_t *)&OHSET_BUCKET_AT_CAPACITY};
 }
 
+/// @brief Allocate the number of bucket provided and migrate existing items
+///   to the new bucket collection
+/// @param set instance
+/// @param new_bucket_count number of buckets to allocate
+/// @return true on success; false on allocation failure
 static bool ohset_rehash(ohset_t *restrict set, uint32_t new_bucket_count) {
 
   const uint32_t new_size = new_bucket_count * (set->config.item_size + sizeof(uint8_t));
@@ -233,9 +285,7 @@ const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
 
   ohset_bucket_t bucket = ohset_bucket_val(set, value, false);
 
-  return bucket.state != NULL && *bucket.state == OHSET_BUCKET_POPULATED
-             ? bucket.value
-             : NULL;
+  return *bucket.state == OHSET_BUCKET_POPULATED ? bucket.value : NULL;
 }
 
 bool ohset_add(ohset_t *restrict set, const void *restrict value) {
@@ -251,7 +301,7 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
   }
 
   ohset_bucket_t bucket = ohset_bucket_val(set, value, true);
-  if (bucket.state != NULL && OHSET_BUCKET_POPULATED == *bucket.state) {
+  if (OHSET_BUCKET_POPULATED == *bucket.state) {
     return false;
   }
 
@@ -298,7 +348,7 @@ bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
 
   ohset_bucket_t bucket = ohset_bucket_val(set, value, false);
 
-  if (bucket.state == NULL || *bucket.state == OHSET_BUCKET_NULL || *bucket.state == OHSET_BUCKET_TOMBSTONED) {
+  if (*bucket.state != OHSET_BUCKET_POPULATED) {
     // nothing to remove
     return false;
   }

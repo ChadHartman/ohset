@@ -181,7 +181,7 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
   }
 
   if (config->item_size == 0) {
-    OHSET_ABORT("%" PRIu32 " is not a valid item size", config->item_size);
+    OHSET_ABORT("%zu is not a valid item size", config->item_size);
     return NULL;
   }
 
@@ -200,7 +200,7 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
 
   set->config.alloc = alloc;
 
-  if (config->load_factor == 0.0f) {
+  if (config->load_factor <= 0.0f) {
     set->config.load_factor = 0.5f;
   } else if (config->load_factor > 1.0f) {
     set->config.load_factor = 1.0f;
@@ -389,7 +389,7 @@ void ohset_clear(ohset_t *restrict set) {
   }
 }
 
-uint32_t ohset_shrink(ohset_t *restrict set) {
+size_t ohset_shrink(ohset_t *restrict set) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_shrink(NULL) was called");

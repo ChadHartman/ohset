@@ -31,8 +31,9 @@ static void *allocator_alloc(void *alloc_ctx, void *ptr, size_t size) {
 }
 
 static char *allocator_strdup(allocator_t *restrict allocator, const char *restrict src) {
-  char *res = allocator_alloc(allocator, NULL, strlen(src) + 1);
-  strcpy(res, src);
+  const size_t size = strlen(src) + 1;
+  char *res = allocator_alloc(allocator, NULL, size);
+  memcpy(res, src, size);
   return res;
 }
 

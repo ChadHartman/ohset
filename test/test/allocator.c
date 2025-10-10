@@ -92,12 +92,13 @@ char *allocator_strdup(allocator_t *restrict allocator, const char *restrict src
     return NULL;
   }
 
-  char *res = allocator_alloc(allocator, NULL, strlen(src) + 1);
+  const size_t size = strlen(src) + 1;
+  char *res = allocator_alloc(allocator, NULL, size);
   if (res == NULL) {
     return NULL;
   }
 
-  strcpy(res, src);
+  memcpy(res, src, size);
 
   return res;
 }

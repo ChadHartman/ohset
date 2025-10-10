@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <ohset.h>
-#include <stdlib.h> // EXIT_SUCCESS
+#include <stdlib.h> // malloc, free
 #include <string.h> // strlen
 
 typedef struct dict_item_t {
@@ -81,5 +81,5 @@ int main() {
   assert(0 == strcmp("gamma", dict_get(dict, "alpha")));
 
   dict_free(dict);
-  return EXIT_SUCCESS;
+  return 0;
 }

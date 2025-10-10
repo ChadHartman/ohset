@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <ohset.h>
-#include <stdlib.h> // EXIT_SUCCESS
+#include <stdlib.h> // malloc, free, realloc
 #include <string.h> // strdup, strcmp
 
 typedef char *string_t;
@@ -79,5 +79,5 @@ int main() {
   assert(3 == allocator.total);
   assert(0 == allocator.live);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

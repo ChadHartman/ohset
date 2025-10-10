@@ -22,18 +22,18 @@
 #endif // OHSET_NO_ABORT
 
 /// @brief Bucket flag to indicate it has never been used
-static const uint8_t OHSET_BUCKET_NULL = 0;
+#define OHSET_BUCKET_NULL ((uint8_t)0U)
 
 /// @brief Bucket flag indicating it is populated
-static const uint8_t OHSET_BUCKET_POPULATED = 1;
+#define OHSET_BUCKET_POPULATED ((uint8_t)1U)
 
 /// @brief Bucket flag indicating that is was once populated; but now vacated.
 ///   This communicates that the bucket is available for writing but open
 ///   address chaining should continue
-static const uint8_t OHSET_BUCKET_TOMBSTONED = 2;
+#define OHSET_BUCKET_TOMBSTONED ((uint8_t)2U)
 
 /// @brief Indicate that there are no buckets available
-static const uint8_t OHSET_BUCKET_AT_CAPACITY = 3;
+#define OHSET_BUCKET_AT_CAPACITY ((uint8_t)3U)
 
 struct ohset_iter_t {
 
@@ -104,7 +104,7 @@ static void *ohset_default_alloc(void *ctx, void *ptr, size_t size) {
 static void ohset_bucket_set(
     ohset_bucket_t *restrict bucket,
     const void *restrict value,
-    uint32_t item_size) {
+    size_t item_size) {
 
   if (value == NULL) {
     *bucket->state = OHSET_BUCKET_TOMBSTONED;
@@ -121,7 +121,7 @@ static void ohset_bucket_set(
 /// @return the corresponding bucket
 static ohset_bucket_t ohset_bucket_idx(
     const uint8_t *restrict buckets,
-    uint32_t item_size,
+    size_t item_size,
     uint32_t idx) {
 
   const uint8_t *bucket = buckets + (idx * (item_size + sizeof(uint8_t)));
@@ -145,8 +145,10 @@ static ohset_bucket_t ohset_bucket_val(
     const void *restrict value,
     bool writable) {
 
+  static uint8_t at_capacity = OHSET_BUCKET_AT_CAPACITY;
+
   if (set->bucket_count == 0) {
-    return (ohset_bucket_t){.state = (uint8_t *)&OHSET_BUCKET_AT_CAPACITY};
+    return (ohset_bucket_t){.state = &at_capacity};
   }
 
   const uint32_t digest = set->config.item_hash == NULL
@@ -189,7 +191,7 @@ static ohset_bucket_t ohset_bucket_val(
   }
 
   // Load factor must be 1; all buckets are filled
-  return (ohset_bucket_t){.state = (uint8_t *)&OHSET_BUCKET_AT_CAPACITY};
+  return (ohset_bucket_t){.state = &at_capacity};
 }
 
 /// @brief Allocate the number of bucket provided and migrate existing items
@@ -199,7 +201,7 @@ static ohset_bucket_t ohset_bucket_val(
 /// @return true on success; false on allocation failure
 static bool ohset_rehash(ohset_t *restrict set, uint32_t new_bucket_count) {
 
-  const uint32_t new_size = new_bucket_count * (set->config.item_size + sizeof(uint8_t));
+  const size_t new_size = new_bucket_count * (set->config.item_size + sizeof(uint8_t));
   uint8_t *restrict new_buckets = set->config.alloc(set->config.alloc_ctx, NULL, new_size);
 
   if (new_buckets == NULL) {

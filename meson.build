@@ -3,8 +3,6 @@ project('ohset',
     default_options: ['c_std=c99'],
     version: '1.0.0')
 
-# meson ohsetup -Db_coverage=true builddir
-
 c_args = []
 
 if build_machine.system() == 'windows'
@@ -57,9 +55,8 @@ tests = executable('ohset-tests',
     include_directories: include_directories(['include', 'src', 'test']),
     c_args: c_args 
         + '-DOHSET_NO_ABORT'
-        + '-DOHSET_DEBUG')
-
-# `ninja coverage` to generate coverage reports
+        + '-DOHSET_DEBUG'
+        + '-DOHSET_TEST')
 
 test('ohset-tests', tests)
 test('example-alloc', ex_alloc)

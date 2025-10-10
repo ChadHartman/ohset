@@ -1,7 +1,5 @@
 #include <assert.h>
 #include <ohset.h>
-#include <stdio.h>  // printf
-#include <stdlib.h> // EXIT_SUCCESS
 
 int main() {
 
@@ -35,5 +33,5 @@ int main() {
     assert(expected[i++] == actual);
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

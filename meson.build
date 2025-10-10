@@ -19,7 +19,8 @@ libohset = library(
     include_directories: include_directories('./include/'),
     version: meson.project_version(),
     soversion: '1',
-    c_args: c_args)
+    c_args: c_args 
+        + '-DOHSET_EXPORTS')
 
 ohset_dep = declare_dependency(
   include_directories: include_directories('./include/'),

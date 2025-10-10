@@ -225,7 +225,7 @@ static bool ohset_rehash(ohset_t *restrict set, uint32_t new_bucket_count) {
   return true;
 }
 
-ohset_t *ohset_new(const ohset_config_t *restrict config) {
+OHSET_API ohset_t *ohset_new(const ohset_config_t *restrict config) {
 
   if (config == NULL) {
     OHSET_ABORT("NULL config provided");
@@ -261,7 +261,7 @@ ohset_t *ohset_new(const ohset_config_t *restrict config) {
   return set;
 }
 
-uint32_t ohset_count(const ohset_t *restrict set) {
+OHSET_API uint32_t ohset_count(const ohset_t *restrict set) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_count(NULL) was called");
@@ -271,7 +271,7 @@ uint32_t ohset_count(const ohset_t *restrict set) {
   return set->item_count;
 }
 
-const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
+OHSET_API const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_get(NULL, ...) was called");
@@ -288,7 +288,7 @@ const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
   return *bucket.state == OHSET_BUCKET_POPULATED ? bucket.value : NULL;
 }
 
-bool ohset_add(ohset_t *restrict set, const void *restrict value) {
+OHSET_API bool ohset_add(ohset_t *restrict set, const void *restrict value) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_add(NULL, ...) was called");
@@ -324,7 +324,7 @@ bool ohset_add(ohset_t *restrict set, const void *restrict value) {
   return true;
 }
 
-void ohset_put(ohset_t *restrict set, const void *restrict value) {
+OHSET_API void ohset_put(ohset_t *restrict set, const void *restrict value) {
 
   if (ohset_add(set, value)) {
     return;
@@ -334,7 +334,7 @@ void ohset_put(ohset_t *restrict set, const void *restrict value) {
   ohset_add(set, value);
 }
 
-bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
+OHSET_API bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_remove(NULL, ...) was called");
@@ -366,7 +366,7 @@ bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
   return true;
 }
 
-ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
+OHSET_API ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_iter(NULL) was called");
@@ -386,7 +386,7 @@ ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
   return NULL;
 }
 
-ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
+OHSET_API ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
 
   if (iter == NULL) {
     OHSET_ABORT("ohset_iter_next(NULL) was called");
@@ -409,7 +409,7 @@ ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
   return NULL;
 }
 
-const void *ohset_iter_value(ohset_iter_t *restrict iter) {
+OHSET_API const void *ohset_iter_value(ohset_iter_t *restrict iter) {
 
   if (iter == NULL) {
     OHSET_ABORT("ohset_iter_value(NULL) was called");
@@ -424,7 +424,7 @@ const void *ohset_iter_value(ohset_iter_t *restrict iter) {
   return ohset_bucket_idx(iter->set->buckets, iter->set->config.item_size, iter->index).value;
 }
 
-void ohset_clear(ohset_t *restrict set) {
+OHSET_API void ohset_clear(ohset_t *restrict set) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_clear(NULL) was called");
@@ -439,7 +439,7 @@ void ohset_clear(ohset_t *restrict set) {
   }
 }
 
-size_t ohset_shrink(ohset_t *restrict set) {
+OHSET_API size_t ohset_shrink(ohset_t *restrict set) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_shrink(NULL) was called");
@@ -453,7 +453,7 @@ size_t ohset_shrink(ohset_t *restrict set) {
   return current_size - shrink_size;
 }
 
-void ohset_free(ohset_t *restrict set) {
+OHSET_API void ohset_free(ohset_t *restrict set) {
 
   if (set == NULL) {
     return;
@@ -465,7 +465,7 @@ void ohset_free(ohset_t *restrict set) {
   set->config.alloc(set->config.alloc_ctx, set, 0);
 }
 
-uint32_t ohset_hash(const void *restrict ptr, size_t len) {
+OHSET_API uint32_t ohset_hash(const void *restrict ptr, size_t len) {
 
   if (ptr == NULL) {
     return 0;

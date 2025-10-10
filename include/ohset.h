@@ -1,5 +1,45 @@
+// MIT License
+// Copyright (c) 2025 Chad Hartman
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef OHSET_H
 #define OHSET_H
+
+#define OHSET_VERSION_MAJOR 1
+#define OHSET_VERSION_MINOR 0
+#define OHSET_VERSION_PATCH 0
+
+#define OHSET_VERSION_STRING "1.0.0"
+
+#if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(OHSET_TEST)
+#if defined(OHSET_EXPORTS)
+#define OHSET_API __declspec(dllexport)
+
+#else
+#define OHSET_API __declspec(dllimport)
+
+#endif
+#elif defined(__GNUC__)
+#define OHSET_API __attribute__((visibility("default")))
+
+#else
+#define OHSET_API
+
+#endif
 
 #include <stdbool.h>
 #include <stddef.h> // size_t
@@ -51,14 +91,14 @@ typedef struct ohset_config_t {
 /// @brief Construct a new open-addressing hash set instance
 /// @param config used to create the set
 /// @return set instance
-ohset_t *ohset_new(const ohset_config_t *restrict config);
+OHSET_API ohset_t *ohset_new(const ohset_config_t *restrict config);
 
 /// @brief Number of items stored in the set
 /// @details uint32_t was chosen (UINT32_MAX number of rows max) because
 ///   @see ohset_hash returns uint32_t
 /// @param set instance
 /// @return the number of items stored
-uint32_t ohset_count(const ohset_t *restrict set);
+OHSET_API uint32_t ohset_count(const ohset_t *restrict set);
 
 /// @brief Retrieve the item from the set whose @see ohset_config_t::item_hash
 ///   computes the same and @see ohset_config_t::item_cmp
@@ -66,7 +106,7 @@ uint32_t ohset_count(const ohset_t *restrict set);
 /// @param set instance
 /// @param value to find
 /// @return Pointer to the internal item or NULL if not found
-const void *ohset_get(const ohset_t *restrict set, const void *restrict value);
+OHSET_API const void *ohset_get(const ohset_t *restrict set, const void *restrict value);
 
 /// @brief Add the item to the set; doing so invalidates any provided
 ///   @see ohset_iter_t
@@ -75,55 +115,55 @@ const void *ohset_get(const ohset_t *restrict set, const void *restrict value);
 /// @return true if the item was added or false if
 ///   @see ohset_config_t::item_hash computes the same and
 ///   @see ohset_config_t::item_cmp returns 0 as the provided value
-bool ohset_add(ohset_t *restrict set, const void *restrict value);
+OHSET_API bool ohset_add(ohset_t *restrict set, const void *restrict value);
 
 /// @brief Add or clobber an existing item; doing so invalidates any provided
 ///   @see ohset_iter_t
 /// @param set instance
 /// @param value to put
-void ohset_put(ohset_t *restrict set, const void *restrict value);
+OHSET_API void ohset_put(ohset_t *restrict set, const void *restrict value);
 
 /// @brief Remove the item from the set; calling @see ohset_config_t::item_dtor
 ///   if provided and found; doing so invalidates any provided @see ohset_iter_t
 /// @param set instance
 /// @param value to remove
 /// @return true if the item was removed or false if not found
-bool ohset_remove(ohset_t *restrict set, const void *restrict value);
+OHSET_API bool ohset_remove(ohset_t *restrict set, const void *restrict value);
 
 /// @brief Remove all entried (calling @see ohset_config_t::item_dtor) for each
 ///   one; doing so invalidates any provided @see ohset_iter_t
 /// @param set instance
-void ohset_clear(ohset_t *restrict set);
+OHSET_API void ohset_clear(ohset_t *restrict set);
 
 /// @brief Destroy the set instance and free all of the utilized memory
 /// @param set
-void ohset_free(ohset_t *restrict set);
+OHSET_API void ohset_free(ohset_t *restrict set);
 
 /// @brief Densely compacts the set's contents (malloc only what is needed and
 ///   freeing the rest)
 /// @param set instance
 /// @return number of bytes freed
-size_t ohset_shrink(ohset_t *restrict set);
+OHSET_API size_t ohset_shrink(ohset_t *restrict set);
 
 /// @brief Retrieve an iterator at the start of the set
 /// @param set instance
 /// @return an iterator at the first position or NULL if empty
-ohset_iter_t *ohset_iter(const ohset_t *restrict set);
+OHSET_API ohset_iter_t *ohset_iter(const ohset_t *restrict set);
 
 /// @brief Advance the iterator to the next item
 /// @param iter instance
 /// @return an iterator advanced to the next entry or NULL if reached the end
-ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter);
+OHSET_API ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter);
 
 /// @brief Retrieve the value from the iterator at its current position
 /// @param iter instance
 /// @return the current value
-const void *ohset_iter_value(ohset_iter_t *restrict iter);
+OHSET_API const void *ohset_iter_value(ohset_iter_t *restrict iter);
 
 /// @brief Utility implementation of Austin Appleby's MurmurHash3
 /// @param key value to hash
 /// @param len size of the value to hash
 /// @return hash digest
-uint32_t ohset_hash(const void *restrict key, size_t len);
+OHSET_API uint32_t ohset_hash(const void *restrict key, size_t len);
 
 #endif

@@ -183,7 +183,9 @@ static ohset_bucket_t ohset_bucket_val(
 
     default:
       OHSET_ABORT("Unreachable section reached");
-      return (ohset_bucket_t){0};
+#ifdef OHSET_NO_ABORT
+      return (ohset_bucket_t){.state = &at_capacity};
+#endif
     }
 
     // Linear search
@@ -206,7 +208,9 @@ static bool ohset_rehash(ohset_t *restrict set, uint32_t new_bucket_count) {
 
   if (new_buckets == NULL) {
     OHSET_ABORT("Failed to reallocate buckets; allocator returned NULL");
+#ifdef OHSET_NO_ABORT
     return false;
+#endif
   }
 
   const uint32_t old_bucket_count = set->bucket_count;
@@ -231,12 +235,16 @@ OHSET_API ohset_t *ohset_new(const ohset_config_t *restrict config) {
 
   if (config == NULL) {
     OHSET_ABORT("NULL config provided");
+#ifdef OHSET_NO_ABORT
     return NULL;
+#endif
   }
 
   if (config->item_size == 0) {
     OHSET_ABORT("%zu is not a valid item size", config->item_size);
+#ifdef OHSET_NO_ABORT
     return NULL;
+#endif
   }
 
   void *(*alloc)(void *, void *, size_t) = config->alloc ? config->alloc : ohset_default_alloc;
@@ -244,7 +252,9 @@ OHSET_API ohset_t *ohset_new(const ohset_config_t *restrict config) {
   ohset_t *restrict set = alloc(config->alloc_ctx, NULL, sizeof(ohset_t));
   if (set == NULL) {
     OHSET_ABORT("Failed to allocate %zu bytes; allocator returned NULL", sizeof(ohset_t));
+#ifdef OHSET_NO_ABORT
     return NULL;
+#endif
   }
 
   *set = (ohset_t){
@@ -267,7 +277,9 @@ OHSET_API uint32_t ohset_count(const ohset_t *restrict set) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_count(NULL) was called");
+#ifdef OHSET_NO_ABORT
     return 0;
+#endif
   }
 
   return set->item_count;
@@ -277,12 +289,16 @@ OHSET_API const void *ohset_get(const ohset_t *restrict set, const void *restric
 
   if (set == NULL) {
     OHSET_ABORT("ohset_get(NULL, ...) was called");
+#ifdef OHSET_NO_ABORT
     return false;
+#endif
   }
 
   if (value == NULL) {
     OHSET_ABORT("ohset_get(ohset_t@%p, NULL) was called", set);
+#ifdef OHSET_NO_ABORT
     return false;
+#endif
   }
 
   ohset_bucket_t bucket = ohset_bucket_val(set, value, false);
@@ -294,12 +310,16 @@ OHSET_API bool ohset_add(ohset_t *restrict set, const void *restrict value) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_add(NULL, ...) was called");
+#ifdef OHSET_NO_ABORT
     return false;
+#endif
   }
 
   if (value == NULL) {
     OHSET_ABORT("ohset_add(ohset_t@%p, NULL) was called", set);
+#ifdef OHSET_NO_ABORT
     return false;
+#endif
   }
 
   ohset_bucket_t bucket = ohset_bucket_val(set, value, true);
@@ -340,12 +360,16 @@ OHSET_API bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_remove(NULL, ...) was called");
+#ifdef OHSET_NO_ABORT
     return false;
+#endif
   }
 
   if (value == NULL) {
     OHSET_ABORT("ohset_remove(ohset_t@%p, NULL) was called", set);
+#ifdef OHSET_NO_ABORT
     return false;
+#endif
   }
 
   ohset_bucket_t bucket = ohset_bucket_val(set, value, false);
@@ -372,7 +396,9 @@ OHSET_API ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_iter(NULL) was called");
+#ifdef OHSET_NO_ABORT
     return false;
+#endif
   }
 
   ohset_iter_t *restrict iter = (ohset_iter_t *)&set->iter;
@@ -392,12 +418,16 @@ OHSET_API ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
 
   if (iter == NULL) {
     OHSET_ABORT("ohset_iter_next(NULL) was called");
+#ifdef OHSET_NO_ABORT
     return NULL;
+#endif
   }
 
   if (!iter->valid) {
     OHSET_ABORT("Invalid iterator provided");
+#ifdef OHSET_NO_ABORT
     return NULL;
+#endif
   }
 
   for (++iter->index; iter->index < iter->set->bucket_count; ++iter->index) {
@@ -415,12 +445,16 @@ OHSET_API const void *ohset_iter_value(ohset_iter_t *restrict iter) {
 
   if (iter == NULL) {
     OHSET_ABORT("ohset_iter_value(NULL) was called");
+#ifdef OHSET_NO_ABORT
     return NULL;
+#endif
   }
 
   if (!iter->valid) {
     OHSET_ABORT("Invalid iterator provided");
+#ifdef OHSET_NO_ABORT
     return NULL;
+#endif
   }
 
   return ohset_bucket_idx(iter->set->buckets, iter->set->config.item_size, iter->index).value;
@@ -445,7 +479,9 @@ OHSET_API size_t ohset_shrink(ohset_t *restrict set) {
 
   if (set == NULL) {
     OHSET_ABORT("ohset_shrink(NULL) was called");
+#ifdef OHSET_NO_ABORT
     return 0;
+#endif
   }
 
   const size_t bucket_size = sizeof(uint8_t) + set->config.item_size;

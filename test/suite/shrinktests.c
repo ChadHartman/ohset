@@ -19,9 +19,7 @@ static void test_ceil_pow_2(void) {
   }
 }
 
-TEST(shrink) {
-
-  test_ceil_pow_2();
+static void test_shrink_success(void) {
 
   ASSERT_EQ(0, ohset_shrink(NULL));
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
@@ -29,7 +27,7 @@ TEST(shrink) {
   });
 
   ASSERT_NON_NULL(set);
-  ASSERT_EQ(0, ohset_shrink(NULL));
+  ASSERT_EQ(0, ohset_shrink(set));
 
   for (size_t i = 0; i < 100; ++i) {
     ASSERT(ohset_add(set, &i));
@@ -38,4 +36,48 @@ TEST(shrink) {
   ASSERT_EQ(1152, ohset_shrink(set));
 
   ohset_free(set);
+}
+
+static void test_shrink_single(void) {
+
+  ASSERT_EQ(0, ohset_shrink(NULL));
+  ohset_t *restrict set = ohset_new(&(ohset_config_t){
+      .item_size = sizeof(size_t),
+  });
+
+  ASSERT_NON_NULL(set);
+
+  size_t value = 24;
+  ASSERT(ohset_add(set, &value));
+
+  // Small as possible
+  ASSERT_EQ(0, ohset_shrink(set));
+
+  ohset_free(set);
+}
+
+static void test_shrink_empty(void) {
+
+  ASSERT_EQ(0, ohset_shrink(NULL));
+  ohset_t *restrict set = ohset_new(&(ohset_config_t){
+      .item_size = sizeof(size_t),
+  });
+
+  ASSERT_NON_NULL(set);
+
+  size_t value = 24;
+  ASSERT(ohset_add(set, &value));
+  ASSERT(ohset_remove(set, &value));
+
+  // All data removed
+  ASSERT_EQ(144, ohset_shrink(set));
+
+  ohset_free(set);
+}
+
+TEST(shrink) {
+  test_ceil_pow_2();
+  test_shrink_success();
+  test_shrink_empty();
+  test_shrink_single();
 }

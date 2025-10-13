@@ -427,7 +427,7 @@ OHSET_API ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
 
 OHSET_API ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
 
-  if (iter == NULL || iter->magic != OHSET_MAGIC) {
+  if (iter == NULL || iter->magic != OHSET_ITER_MAGIC) {
     OHSET_ABORT("Invalid ohset_iter_t provided to ohset_iter_next");
 #ifdef OHSET_NO_ABORT
     return NULL;
@@ -454,7 +454,7 @@ OHSET_API ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
 
 OHSET_API const void *ohset_iter_value(ohset_iter_t *restrict iter) {
 
-  if (iter == NULL || iter->magic != OHSET_MAGIC) {
+  if (iter == NULL || iter->magic != OHSET_ITER_MAGIC) {
     OHSET_ABORT("Invalid ohset_iter_t provided to ohset_iter_value");
 #ifdef OHSET_NO_ABORT
     return NULL;

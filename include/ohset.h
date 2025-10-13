@@ -82,7 +82,7 @@ typedef struct ohset_config_t {
   /// @brief REQUIRED size of a hash item
   size_t item_size;
 
-  /// @brief OPTIONAL override load factor > 0.0f and <= 1.0f; 0.5f is used by
+  /// @brief OPTIONAL override load factor > 0.0f and <= 1.0f; 0.75f is used by
   ///   default.
   float load_factor;
 

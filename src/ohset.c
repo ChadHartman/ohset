@@ -278,7 +278,7 @@ OHSET_API ohset_t *ohset_new(const ohset_config_t *restrict config) {
   set->config.alloc = alloc;
 
   if (config->load_factor <= 0.0f) {
-    set->config.load_factor = 0.5f;
+    set->config.load_factor = 0.75f;
   } else if (config->load_factor > 1.0f) {
     set->config.load_factor = 1.0f;
   }
@@ -347,7 +347,7 @@ OHSET_API bool ohset_add(ohset_t *restrict set, const void *restrict value) {
                                 : ((float)(set->item_count + 1) / (float)(set->bucket_count));
 
   if (load_factor > set->config.load_factor) {
-    const uint32_t new_bucket_count = set->bucket_count == 0 ? 8 : set->bucket_count * 2;
+    const uint32_t new_bucket_count = set->bucket_count == 0 ? 16 : set->bucket_count * 2;
     if (!ohset_rehash(set, new_bucket_count)) {
       return false;
     }

@@ -31,11 +31,11 @@ TEST(shrink) {
   ASSERT_NON_NULL(set);
   ASSERT_EQ(0, ohset_shrink(NULL));
 
-  for (size_t i = 42; i < 52; ++i) {
+  for (size_t i = 0; i < 100; ++i) {
     ASSERT(ohset_add(set, &i));
   }
 
-  ASSERT_EQ(54, ohset_shrink(set));
+  ASSERT_EQ(1152, ohset_shrink(set));
 
   ohset_free(set);
 }

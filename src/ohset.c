@@ -241,6 +241,10 @@ static bool ohset_rehash(ohset_t *restrict set, uint32_t new_bucket_count) {
 #endif
   }
 
+  if (set->bucket_count == new_bucket_count) {
+    return true;
+  }
+
   const uint32_t old_bucket_count = set->bucket_count;
   uint8_t *restrict old_buckets = set->buckets;
   set->bucket_count = new_bucket_count;

@@ -15,7 +15,7 @@ TEST(shrink) {
     ASSERT(ohset_add(set, &i));
   }
 
-  ASSERT_EQ(198, ohset_shrink(set));
+  ASSERT_EQ(54, ohset_shrink(set));
 
   ohset_free(set);
 }

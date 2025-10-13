@@ -21,6 +21,9 @@
   abort()
 #endif // OHSET_NO_ABORT
 
+#define OHSET_MAGIC 0xfcceb6c8
+#define OHSET_ITER_MAGIC 0x11ab34ca
+
 /// @brief Bucket flag to indicate it has never been used
 #define OHSET_BUCKET_NULL ((uint8_t)0U)
 
@@ -37,6 +40,8 @@
 
 struct ohset_iter_t {
 
+  uint32_t magic;
+
   /// @brief Owning set
   ohset_t *set;
 
@@ -48,6 +53,8 @@ struct ohset_iter_t {
 };
 
 struct ohset_t {
+
+  uint32_t magic;
 
   /// @brief Client-provided configuration
   ohset_config_t config;
@@ -258,8 +265,12 @@ OHSET_API ohset_t *ohset_new(const ohset_config_t *restrict config) {
   }
 
   *set = (ohset_t){
+      .magic = OHSET_MAGIC,
       .config = *config,
-      .iter.set = set,
+      .iter = {
+          .magic = OHSET_ITER_MAGIC,
+          .set = set,
+      },
   };
 
   set->config.alloc = alloc;
@@ -275,8 +286,8 @@ OHSET_API ohset_t *ohset_new(const ohset_config_t *restrict config) {
 
 OHSET_API uint32_t ohset_count(const ohset_t *restrict set) {
 
-  if (set == NULL) {
-    OHSET_ABORT("ohset_count(NULL) was called");
+  if (set == NULL || set->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_t provided to ohset_count");
 #ifdef OHSET_NO_ABORT
     return 0;
 #endif
@@ -287,8 +298,8 @@ OHSET_API uint32_t ohset_count(const ohset_t *restrict set) {
 
 OHSET_API const void *ohset_get(const ohset_t *restrict set, const void *restrict value) {
 
-  if (set == NULL) {
-    OHSET_ABORT("ohset_get(NULL, ...) was called");
+  if (set == NULL || set->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_t provided to ohset_get");
 #ifdef OHSET_NO_ABORT
     return false;
 #endif
@@ -308,8 +319,8 @@ OHSET_API const void *ohset_get(const ohset_t *restrict set, const void *restric
 
 OHSET_API bool ohset_add(ohset_t *restrict set, const void *restrict value) {
 
-  if (set == NULL) {
-    OHSET_ABORT("ohset_add(NULL, ...) was called");
+  if (set == NULL || set->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_t provided to ohset_add");
 #ifdef OHSET_NO_ABORT
     return false;
 #endif
@@ -358,8 +369,8 @@ OHSET_API void ohset_put(ohset_t *restrict set, const void *restrict value) {
 
 OHSET_API bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
 
-  if (set == NULL) {
-    OHSET_ABORT("ohset_remove(NULL, ...) was called");
+  if (set == NULL || set->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_t provided to ohset_remove");
 #ifdef OHSET_NO_ABORT
     return false;
 #endif
@@ -394,8 +405,8 @@ OHSET_API bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
 
 OHSET_API ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
 
-  if (set == NULL) {
-    OHSET_ABORT("ohset_iter(NULL) was called");
+  if (set == NULL || set->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_t provided to ohset_iter");
 #ifdef OHSET_NO_ABORT
     return false;
 #endif
@@ -416,8 +427,8 @@ OHSET_API ohset_iter_t *ohset_iter(const ohset_t *restrict set) {
 
 OHSET_API ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
 
-  if (iter == NULL) {
-    OHSET_ABORT("ohset_iter_next(NULL) was called");
+  if (iter == NULL || iter->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_iter_t provided to ohset_iter_next");
 #ifdef OHSET_NO_ABORT
     return NULL;
 #endif
@@ -443,8 +454,8 @@ OHSET_API ohset_iter_t *ohset_iter_next(ohset_iter_t *restrict iter) {
 
 OHSET_API const void *ohset_iter_value(ohset_iter_t *restrict iter) {
 
-  if (iter == NULL) {
-    OHSET_ABORT("ohset_iter_value(NULL) was called");
+  if (iter == NULL || iter->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_iter_t provided to ohset_iter_value");
 #ifdef OHSET_NO_ABORT
     return NULL;
 #endif
@@ -462,9 +473,11 @@ OHSET_API const void *ohset_iter_value(ohset_iter_t *restrict iter) {
 
 OHSET_API void ohset_clear(ohset_t *restrict set) {
 
-  if (set == NULL) {
-    OHSET_ABORT("ohset_clear(NULL) was called");
+  if (set == NULL || set->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_t provided to ohset_iter");
+#ifdef OHSET_NO_ABORT
     return;
+#endif
   }
 
   for (uint32_t i = 0; i < set->bucket_count; ++i) {
@@ -477,8 +490,8 @@ OHSET_API void ohset_clear(ohset_t *restrict set) {
 
 OHSET_API size_t ohset_shrink(ohset_t *restrict set) {
 
-  if (set == NULL) {
-    OHSET_ABORT("ohset_shrink(NULL) was called");
+  if (set == NULL || set->magic != OHSET_MAGIC) {
+    OHSET_ABORT("Invalid ohset_t provided to ohset_shrink");
 #ifdef OHSET_NO_ABORT
     return 0;
 #endif

@@ -158,7 +158,9 @@ static ohset_bucket_t ohset_bucket_val(
   const uint32_t digest = set->config.item_hash == NULL
                               ? ohset_hash(value, set->config.item_size)
                               : set->config.item_hash(value);
-  uint32_t idx = digest % set->bucket_count;
+  // uint32_t idx = digest % set->bucket_count;
+  const uint32_t mask = set->bucket_count - 1;
+  uint32_t idx = digest & mask;
 
   for (uint32_t i = 0; i < set->bucket_count; ++i) {
 

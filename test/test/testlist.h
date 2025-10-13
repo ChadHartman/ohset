@@ -7,7 +7,7 @@
 
 typedef struct test_t {
   const char *name;
-  void (*func)();
+  void (*func)(void);
 } test_t;
 
 TEST(add);

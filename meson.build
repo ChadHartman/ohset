@@ -8,7 +8,7 @@ c_args = []
 if build_machine.system() == 'windows'
     c_args = ['/W4', '/WX']
 else
-    c_args = ['-Wall', '-Wextra', '-Werror']
+    c_args = ['-Wall', '-Wextra', '-Werror', '-Wpedantic']
 endif
 
 libohset = library(

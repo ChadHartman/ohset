@@ -42,31 +42,31 @@ struct ohset_iter_t {
 
   uint32_t magic;
 
-  /// @brief Owning set
-  ohset_t *set;
-
   /// @brief Current bucket offset
   uint32_t index;
 
   /// @brief Flag indicating no modifications occurred
   bool valid;
+
+  /// @brief Owning set
+  ohset_t *set;
 };
 
 struct ohset_t {
 
   uint32_t magic;
 
-  /// @brief Client-provided configuration
-  ohset_config_t config;
-
   /// @brief Number of stored items
   uint32_t item_count;
+
+  /// @brief Number of buckets currently allocated
+  uint32_t bucket_count;
 
   /// @brief Pointer to bucket raw bytes
   uint8_t *buckets;
 
-  /// @brief Number of buckets currently allocated
-  uint32_t bucket_count;
+  /// @brief Client-provided configuration
+  ohset_config_t config;
 
   /// @brief Preallocated iterator to return
   ohset_iter_t iter;
@@ -113,6 +113,7 @@ static void ohset_bucket_set(
     const void *restrict value,
     size_t item_size) {
 
+  // TODO investigate branchless
   if (value == NULL) {
     *bucket->state = OHSET_BUCKET_TOMBSTONED;
   } else {
@@ -196,6 +197,7 @@ static ohset_bucket_t ohset_bucket_val(
     }
 
     // Linear search
+    // TODO: investigate shifts
     idx = (idx + 1) % set->bucket_count;
   }
 
@@ -306,7 +308,7 @@ OHSET_API const void *ohset_get(const ohset_t *restrict set, const void *restric
   }
 
   if (value == NULL) {
-    OHSET_ABORT("ohset_get(ohset_t@%p, NULL) was called", set);
+    OHSET_ABORT("ohset_get(ohset_t@%p, NULL) was called", (void *)set);
 #ifdef OHSET_NO_ABORT
     return false;
 #endif
@@ -327,7 +329,7 @@ OHSET_API bool ohset_add(ohset_t *restrict set, const void *restrict value) {
   }
 
   if (value == NULL) {
-    OHSET_ABORT("ohset_add(ohset_t@%p, NULL) was called", set);
+    OHSET_ABORT("ohset_add(ohset_t@%p, NULL) was called", (void *)set);
 #ifdef OHSET_NO_ABORT
     return false;
 #endif

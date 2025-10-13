@@ -2,7 +2,7 @@
 #include <test/allocator.h>
 #include <test/test.h>
 
-static void test_remove_many() {
+static void test_remove_many(void) {
 
   ASSERT_FALSE(ohset_remove(NULL, NULL));
   ohset_clear(NULL); // Verify noop

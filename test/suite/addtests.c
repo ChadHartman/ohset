@@ -2,7 +2,7 @@
 #include <test/allocator.h>
 #include <test/test.h>
 
-static void test_add_many() {
+static void test_add_many(void) {
 
   ASSERT_FALSE(ohset_add(NULL, NULL));
 
@@ -27,7 +27,7 @@ static void test_add_many() {
   ohset_free(set);
 }
 
-static void test_add_alloc_failed_2nd_time() {
+static void test_add_alloc_failed_2nd_time(void) {
 
   const size_t item = 42;
   allocator_t allocator = {
@@ -45,7 +45,7 @@ static void test_add_alloc_failed_2nd_time() {
   ohset_free(set);
 }
 
-static void test_add_load_factor_1() {
+static void test_add_load_factor_1(void) {
 
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .item_size = sizeof(size_t),

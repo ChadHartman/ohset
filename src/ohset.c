@@ -379,7 +379,7 @@ OHSET_API bool ohset_remove(ohset_t *restrict set, const void *restrict value) {
   }
 
   if (value == NULL) {
-    OHSET_ABORT("ohset_remove(ohset_t@%p, NULL) was called", set);
+    OHSET_ABORT("ohset_remove(ohset_t@%p, NULL) was called", (void *)set);
 #ifdef OHSET_NO_ABORT
     return false;
 #endif

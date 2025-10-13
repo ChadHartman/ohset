@@ -86,6 +86,20 @@ static inline uint32_t ohset_hash_scramble(uint32_t k) {
   return k;
 }
 
+/// @brief Take any number and ceiling it to a power of 2
+/// @param value to ceiling
+/// @return the ceiling'd power of 2
+static inline uint32_t ohset_ceil_pow_2(uint32_t value) {
+  --value;
+  value |= value >> 1;
+  value |= value >> 2;
+  value |= value >> 4;
+  value |= value >> 8;
+  value |= value >> 16;
+  ++value;
+  return value < 16 ? 16 : value;
+}
+
 /// @brief Default allocator to use when none was provided
 /// @param ctx unused
 /// @param ptr pointer to free
@@ -504,9 +518,18 @@ OHSET_API size_t ohset_shrink(ohset_t *restrict set) {
 #endif
   }
 
-  const size_t bucket_size = sizeof(uint8_t) + set->config.item_size;
-  const size_t current_size = set->bucket_count * bucket_size;
-  ohset_rehash(set, set->item_count);
+  const uint32_t bucket_size = (uint32_t)((sizeof(uint8_t) + set->config.item_size));
+  const uint32_t current_size = set->bucket_count * bucket_size;
+
+  if (set->item_count == 0) {
+    set->config.alloc(set->config.alloc_ctx, set->buckets, 0);
+    set->buckets = NULL;
+    set->bucket_count = 0;
+    return current_size;
+  }
+
+  const uint32_t desired_count = ohset_ceil_pow_2(set->item_count);
+  ohset_rehash(set, desired_count);
   const size_t shrink_size = set->bucket_count * bucket_size;
   return current_size - shrink_size;
 }

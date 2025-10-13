@@ -113,7 +113,6 @@ static void ohset_bucket_set(
     const void *restrict value,
     size_t item_size) {
 
-  // Branchless implementation
   *bucket->state = value == NULL ? OHSET_BUCKET_TOMBSTONED : OHSET_BUCKET_POPULATED;
   item_size = value == NULL ? 0 : item_size;
   memcpy(bucket->value, value, item_size);

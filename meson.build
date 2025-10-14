@@ -9,7 +9,7 @@ if build_machine.system() == 'windows'
     c_args = [
         '/W4', 
         '/WX', 
-        '/Za',
+        # '/Za', too restrictive; bloats code
         '/analyze',
         '/sdl',
         ]

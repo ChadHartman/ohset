@@ -503,10 +503,20 @@ OHSET_API void ohset_clear(ohset_t *restrict set) {
 #endif
   }
 
+  set->iter.valid = false;
+
   for (uint32_t i = 0; i < set->bucket_count; ++i) {
     ohset_bucket_t bucket = ohset_bucket_idx(set->buckets, set->config.item_size, i);
     if (*bucket.state == OHSET_BUCKET_POPULATED) {
-      ohset_remove(set, bucket.value);
+      if (set->config.item_dtor) {
+        set->config.item_dtor(
+            set->config.alloc_ctx,
+            set->config.alloc,
+            bucket.value);
+      }
+
+      ohset_bucket_set(&bucket, NULL, set->config.item_size);
+      --set->item_count;
     }
   }
 }

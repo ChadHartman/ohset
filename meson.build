@@ -1,7 +1,7 @@
 project('ohset', 
     'c', 
     default_options: ['c_std=c99'],
-    version: '1.0.0')
+    version: '1.0.1')
 
 c_args = []
 

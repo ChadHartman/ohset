@@ -9,7 +9,7 @@
     * Drag and drop `ohset.h` & `ohset.c`
     * Meson import
 * Robust test coverage
-    * Lines: 99.2%
+    * Lines: 99.3%
     * Functions: 100.0%
     * Branches: 100.0%
 
@@ -237,4 +237,27 @@ int main() {
 
 ## Integration
 
-`./includes/ohset.h` & `./src/ohset.c` may be dropped into a project, or meson may be used as well.
+### Drag & Drop
+
+`./includes/ohset.h` & `./src/ohset.c` may be dropped into a project with no special configuration required.
+
+### Meson
+
+Sample `ohset.wrap`:
+
+```
+[wrap-git]
+url = https://github.com/ChadHartman/ohset.git
+revision = 011943aae66ceb8bf45b1883df27b771f1c631f9
+depth = 1
+
+[provide]
+ohset = ohset_dep
+```
+
+NOTE: Be sure to target your desired revision
+
+## Changelog
+
+* 1.0.1
+    * 

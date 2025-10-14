@@ -21,9 +21,9 @@
 
 #define OHSET_VERSION_MAJOR 1
 #define OHSET_VERSION_MINOR 0
-#define OHSET_VERSION_PATCH 0
+#define OHSET_VERSION_PATCH 1
 
-#define OHSET_VERSION_STRING "1.0.0"
+#define OHSET_VERSION_STRING "1.0.1"
 
 #if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(OHSET_TEST)
 #if defined(OHSET_EXPORTS)

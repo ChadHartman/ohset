@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h> // malloc, realloc, free
 #include <string.h> // strlen
 
@@ -37,7 +38,9 @@ static void allocator_record(
       alloc_record_cmp);
 
   if (found == NULL) {
-    allocator->records = realloc(allocator->records, sizeof(alloc_record_t) * ++allocator->record_count);
+    alloc_record_t *restrict records_realloc = realloc(allocator->records, sizeof(alloc_record_t) * ++allocator->record_count);
+    assert(records_realloc);
+    allocator->records = records_realloc;
     allocator->records[allocator->record_count - 1] = key;
     qsort(allocator->records, allocator->record_count, sizeof(alloc_record_t), alloc_record_cmp);
     if (key.live) {

@@ -1,14 +1,34 @@
 project('ohset', 
     'c', 
     default_options: ['c_std=c99'],
-    version: '1.0.0')
+    version: '1.0.1')
 
 c_args = []
 
 if build_machine.system() == 'windows'
-    c_args = ['/W4', '/WX']
+    c_args = [
+        '/W4', 
+        '/WX', 
+        # '/Za', too restrictive; bloats code
+        '/analyze',
+        '/sdl',
+        ]
 else
-    c_args = ['-Wall', '-Wextra', '-Werror']
+    c_args = [
+        '-Wall', 
+        '-Wextra', 
+        '-Werror', 
+        '-Wpedantic',
+        '-Wconversion',
+        '-Wshadow',
+        '-Wstrict-prototypes',
+        '-Wundef',
+        '-Wpointer-arith',
+        '-Wcast-align',
+        '-Wfloat-equal',
+        '-Wformat',
+        '-Wformat-security',
+        ]
 endif
 
 libohset = library(

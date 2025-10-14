@@ -2,8 +2,9 @@
 #include <test/allocator.h>
 #include <test/test.h>
 
-static void test_add_many() {
+static void test_add_many(void) {
 
+  ASSERT_FALSE(ohset_add((ohset_t *)&(ohset_config_t){0}, NULL));
   ASSERT_FALSE(ohset_add(NULL, NULL));
 
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
@@ -27,7 +28,7 @@ static void test_add_many() {
   ohset_free(set);
 }
 
-static void test_add_alloc_failed_2nd_time() {
+static void test_add_alloc_failed_2nd_time(void) {
 
   const size_t item = 42;
   allocator_t allocator = {
@@ -45,7 +46,7 @@ static void test_add_alloc_failed_2nd_time() {
   ohset_free(set);
 }
 
-static void test_add_load_factor_1() {
+static void test_add_load_factor_1(void) {
 
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .item_size = sizeof(size_t),
@@ -54,7 +55,7 @@ static void test_add_load_factor_1() {
 
   ASSERT_NON_NULL(set);
 
-  for (size_t i = 42; i < 52; ++i) {
+  for (size_t i = 42; i < 62; ++i) {
     ASSERT_FALSE(ohset_get(set, &i));
     ASSERT(ohset_add(set, &i));
     ASSERT_FALSE(ohset_add(set, &i));
@@ -62,7 +63,7 @@ static void test_add_load_factor_1() {
   }
 
   // Ensure all items are present
-  for (size_t i = 42; i < 52; ++i) {
+  for (size_t i = 42; i < 62; ++i) {
     const size_t *value = ohset_get(set, &i);
     ASSERT_NON_NULL(value);
     ASSERT_EQ(i, *value);

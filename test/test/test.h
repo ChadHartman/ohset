@@ -15,7 +15,7 @@
 #define COLOR_CYAN "\x1b[36m"
 #define COLOR_RESET "\x1b[0m"
 
-#define TEST(name) void test_##name()
+#define TEST(name) void test_##name(void)
 
 #if 1
 #define TEST_LOG(...)                                         \

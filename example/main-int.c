@@ -24,7 +24,7 @@ int main() {
   assert(NULL != ohset_get(set, &value));
 
   size_t i = 0;
-  const int expected[] = {1, 9, 12, 4};
+  const int expected[] = {12, 9, 4, 1};
   for (ohset_iter_t *iter = ohset_iter(set);
        iter != NULL;
        iter = ohset_iter_next(iter)) {

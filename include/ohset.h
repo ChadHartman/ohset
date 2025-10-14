@@ -21,9 +21,9 @@
 
 #define OHSET_VERSION_MAJOR 1
 #define OHSET_VERSION_MINOR 0
-#define OHSET_VERSION_PATCH 0
+#define OHSET_VERSION_PATCH 1
 
-#define OHSET_VERSION_STRING "1.0.0"
+#define OHSET_VERSION_STRING "1.0.1"
 
 #if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(OHSET_TEST)
 #if defined(OHSET_EXPORTS)
@@ -82,7 +82,7 @@ typedef struct ohset_config_t {
   /// @brief REQUIRED size of a hash item
   size_t item_size;
 
-  /// @brief OPTIONAL override load factor > 0.0f and <= 1.0f; 0.5f is used by
+  /// @brief OPTIONAL override load factor > 0.0f and <= 1.0f; 0.75f is used by
   ///   default.
   float load_factor;
 

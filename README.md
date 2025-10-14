@@ -260,4 +260,6 @@ NOTE: Be sure to target your desired revision
 ## Changelog
 
 * 1.0.1
-    * 
+    * Added compilation compliance with `-Wpedantic`
+    * Added magic to ensure pointers provided to APIs were authored by the APIs in the first place
+    * Converted modulo operations to bitwise operators for improved performance

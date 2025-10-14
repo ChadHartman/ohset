@@ -55,7 +55,7 @@ static void test_add_load_factor_1(void) {
 
   ASSERT_NON_NULL(set);
 
-  for (size_t i = 42; i < 52; ++i) {
+  for (size_t i = 42; i < 62; ++i) {
     ASSERT_FALSE(ohset_get(set, &i));
     ASSERT(ohset_add(set, &i));
     ASSERT_FALSE(ohset_add(set, &i));
@@ -63,7 +63,7 @@ static void test_add_load_factor_1(void) {
   }
 
   // Ensure all items are present
-  for (size_t i = 42; i < 52; ++i) {
+  for (size_t i = 42; i < 62; ++i) {
     const size_t *value = ohset_get(set, &i);
     ASSERT_NON_NULL(value);
     ASSERT_EQ(i, *value);

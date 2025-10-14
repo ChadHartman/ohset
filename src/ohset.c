@@ -545,6 +545,9 @@ OHSET_API void ohset_free(ohset_t *restrict set) {
   ohset_clear(set);
 
   set->config.alloc(set->config.alloc_ctx, set->buckets, 0);
+  // Prevent dead pointer reuse
+  set->magic = 0;
+  set->iter.magic = 0;
   set->config.alloc(set->config.alloc_ctx, set, 0);
 }
 

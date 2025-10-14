@@ -5,6 +5,7 @@
 static void test_remove_many(void) {
 
   ASSERT_FALSE(ohset_remove(NULL, NULL));
+  ASSERT_FALSE(ohset_remove((ohset_t *)&(ohset_config_t){0}, NULL));
   ohset_clear(NULL); // Verify noop
 
   const size_t item = 42;

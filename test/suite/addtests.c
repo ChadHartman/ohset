@@ -4,6 +4,7 @@
 
 static void test_add_many(void) {
 
+  ASSERT_FALSE(ohset_add((ohset_t *)&(ohset_config_t){0}, NULL));
   ASSERT_FALSE(ohset_add(NULL, NULL));
 
   ohset_t *restrict set = ohset_new(&(ohset_config_t){

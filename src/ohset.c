@@ -214,10 +214,8 @@ static ohset_bucket_t ohset_bucket_val(
     }
 
     // Linear search
-    // TODO: investigate shifts
-
-    idx = (idx + 1) & mask;
     // idx = (idx + 1) % set->bucket_count;
+    idx = (idx + 1) & mask;
   }
 
   // Load factor must be 1; all buckets are filled

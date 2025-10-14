@@ -11,6 +11,10 @@ static void test_iter_many(void) {
       .item_size = sizeof(char),
   });
   ASSERT_NON_NULL(set);
+  ASSERT_NULL(ohset_iter((ohset_t *)&(ohset_config_t){0}));
+  ASSERT_NULL(ohset_iter_next((ohset_iter_t *)set));
+  ASSERT_NULL(ohset_iter_value((ohset_iter_t *)set));
+
   ASSERT_NULL(ohset_iter(set));
 
   for (char c = 'a'; c <= 'e'; ++c) {

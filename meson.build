@@ -6,7 +6,13 @@ project('ohset',
 c_args = []
 
 if build_machine.system() == 'windows'
-    c_args = ['/W4', '/WX']
+    c_args = [
+        '/W4', 
+        '/WX', 
+        '/Za',
+        '/analyze',
+        '/sdl',
+        ]
 else
     c_args = [
         '-Wall', 

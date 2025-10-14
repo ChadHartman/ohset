@@ -8,7 +8,21 @@ c_args = []
 if build_machine.system() == 'windows'
     c_args = ['/W4', '/WX']
 else
-    c_args = ['-Wall', '-Wextra', '-Werror', '-Wpedantic']
+    c_args = [
+        '-Wall', 
+        '-Wextra', 
+        '-Werror', 
+        '-Wpedantic',
+        '-Wconversion',
+        '-Wshadow',
+        '-Wstrict-prototypes',
+        '-Wundef',
+        '-Wpointer-arith',
+        '-Wcast-align',
+        '-Wfloat-equal',
+        '-Wformat',
+        '-Wformat-security',
+        ]
 endif
 
 libohset = library(

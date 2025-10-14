@@ -259,6 +259,8 @@ NOTE: Be sure to target your desired revision
 
 ## Changelog
 
+* 1.0.2
+    * Updated `ohset_clear` to tombstone buckets directly instead of calling `ohset_remove` (and consequently re-finding the bucket)
 * 1.0.1
     * Added compilation compliance with `-Wpedantic`
     * Added magic to ensure pointers provided to APIs were authored by the APIs in the first place

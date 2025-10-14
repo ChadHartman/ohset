@@ -59,6 +59,7 @@ static void test_shrink_single(void) {
 static void test_shrink_empty(void) {
 
   ASSERT_EQ(0, ohset_shrink(NULL));
+  ASSERT_EQ(0, ohset_shrink((ohset_t *)&(ohset_config_t){0}));
   ohset_t *restrict set = ohset_new(&(ohset_config_t){
       .item_size = sizeof(size_t),
   });

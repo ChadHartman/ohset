@@ -5,6 +5,8 @@ project('ohset',
 
 c_args = []
 
+
+
 if build_machine.system() == 'windows'
     c_args = [
         '/W4', 
@@ -29,6 +31,16 @@ else
         '-Wformat',
         '-Wformat-security',
         ]
+endif
+
+meson.add_argument(
+    'ohset-no-abort', 
+    type: 'boolean', 
+    default: false, 
+    description: 'Build ohset without aborts on allocation failures')
+
+if get_option('ohset-no-abort')
+    c_args += ['-DOHSET_NO_ABORT']
 endif
 
 libohset = library(

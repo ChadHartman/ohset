@@ -5,6 +5,8 @@ project('ohset',
 
 c_args = []
 
+
+
 if build_machine.system() == 'windows'
     c_args = [
         '/W4', 
@@ -29,6 +31,10 @@ else
         '-Wformat',
         '-Wformat-security',
         ]
+endif
+
+if get_option('ohset_no_abort')
+    c_args += ['-DOHSET_NO_ABORT']
 endif
 
 libohset = library(

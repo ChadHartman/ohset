@@ -1,0 +1,5 @@
+option(
+    'ohset_no_abort', 
+    type: 'boolean', 
+    value: false,
+    description: 'When specified ohset_t will gracefully handle NULL memory allocations instead of aborting')

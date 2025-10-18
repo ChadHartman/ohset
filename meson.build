@@ -33,13 +33,7 @@ else
         ]
 endif
 
-meson.add_argument(
-    'ohset-no-abort', 
-    type: 'boolean', 
-    default: false, 
-    description: 'Build ohset without aborts on allocation failures')
-
-if get_option('ohset-no-abort')
+if get_option('ohset_no_abort')
     c_args += ['-DOHSET_NO_ABORT']
 endif
 
